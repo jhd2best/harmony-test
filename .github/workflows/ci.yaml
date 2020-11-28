@@ -37,16 +37,31 @@ jobs:
         with:
           path: harmony
 
-      - name: Build harmony
-        run: cd harmony && make
+      - name: Build harmony binary
+        run: make
+        working-directory: harmony
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: action-artifact-harmony
+          path: harmony/harmony
+          retention-days: 1
 
   test:
     needs: build
     runs-on: ubuntu-18.04
 
     steps:
+      - name: Download binary
+        uses: actions/download-artifact@v2
+        with:
+          name: action-artifact-harmony
+
       - name: test harmony
-        run: cd harmony && ./harmony -V
+        run: ./harmony -V
+
+
 
   # # Push image to GitHub Packages.
   # # See also https://docs.docker.com/docker-hub/builds/
