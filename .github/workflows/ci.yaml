@@ -13,7 +13,7 @@ env:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - name: Set up Go 1.14
         uses: actions/setup-go@v2
@@ -40,20 +40,13 @@ jobs:
       - name: Build harmony
         run: cd harmony && make
 
-  # test:
-  #   runs-on: ubuntu-latest
+  test:
+    needs: build
+    runs-on: ubuntu-18.04
 
-  #   steps:
-  #     - uses: actions/checkout@v2
-
-  #     - name: Run tests
-  #       run: |
-  #         if [ -f docker-compose.test.yml ]; then
-  #           docker-compose --file docker-compose.test.yml build
-  #           docker-compose --file docker-compose.test.yml run sut
-  #         else
-  #           docker build . --file Dockerfile
-  #         fi
+    steps:
+      - name: test harmony
+        run: cd harmony && ./harmony -V
 
   # # Push image to GitHub Packages.
   # # See also https://docs.docker.com/docker-hub/builds/
