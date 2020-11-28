@@ -48,7 +48,7 @@ jobs:
         run: touch "test1.txt" && echo "test me 111" >> test1.txt
         working-directory: harmony
 
-       - name: Test file 2
+      - name: Test file 2
         run: touch "test2.txt" && echo "test me 222" >> test2.txt
         working-directory: harmony
 
