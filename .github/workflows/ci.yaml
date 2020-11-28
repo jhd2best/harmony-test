@@ -44,7 +44,7 @@ jobs:
       - name: Upload binary
         uses: actions/upload-artifact@v2
         with:
-          name: harmony
+          name: harmony-linux
           path: harmony/bin/harmony
           retention-days: 1
 
@@ -56,13 +56,13 @@ jobs:
       - name: Download binary
         uses: actions/download-artifact@v2
         with:
-          path: ./artifact
+          name: harmony-*
 
       - name: Display structure of downloaded files
         run: ls -R
 
       - name: test harmony
-        run: ./artifact/harmony -V
+        run: ./harmony-linux -V
 
 
 
