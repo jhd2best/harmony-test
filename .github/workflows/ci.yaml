@@ -45,7 +45,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: action-artifact-harmony
-          path: harmony/harmony
+          path: harmony/bin/harmony
           retention-days: 1
 
   test:
