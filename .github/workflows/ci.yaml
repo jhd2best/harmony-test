@@ -11,42 +11,42 @@ env:
   IMAGE_NAME: image
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Set up Go 1.14
-        uses: actions/setup-go@v2
-        with:
-          go-version: ^1.14.7
+  # build:
+  #   name: Build
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #     - name: Set up Go 1.14
+  #       uses: actions/setup-go@v2
+  #       with:
+  #         go-version: ^1.14.7
 
-      - name: Checkout dependence repo
-        uses: actions/checkout@v2
-        with:
-          repository: harmony-one/mcl
-          path: mcl
+  #     - name: Checkout dependence repo
+  #       uses: actions/checkout@v2
+  #       with:
+  #         repository: harmony-one/mcl
+  #         path: mcl
 
-      - name: Checkout dependence repo
-        uses: actions/checkout@v2
-        with:
-          repository: harmony-one/bls
-          path: bls
+  #     - name: Checkout dependence repo
+  #       uses: actions/checkout@v2
+  #       with:
+  #         repository: harmony-one/bls
+  #         path: bls
 
-      - name: Checkout harmony core code
-        uses: actions/checkout@v2
-        with:
-          path: harmony
+  #     - name: Checkout harmony core code
+  #       uses: actions/checkout@v2
+  #       with:
+  #         path: harmony
 
-      - name: Build harmony binary
-        run: make
-        working-directory: harmony
+  #     - name: Build harmony binary
+  #       run: make
+  #       working-directory: harmony
 
-      - name: Upload binary
-        uses: actions/upload-artifact@v2
-        with:
-          name: action-artifact-harmony
-          path: harmony/bin/harmony
-          retention-days: 1
+  #     - name: Upload binary
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: action-artifact-harmony
+  #         path: harmony/bin/harmony
+  #         retention-days: 1
 
   test:
     needs: build
@@ -59,7 +59,7 @@ jobs:
           name: action-artifact-harmony
 
       - name: test harmony
-        run: ./harmony -V
+        run: ./action-artifact-harmony -V
 
 
 
