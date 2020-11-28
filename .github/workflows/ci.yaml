@@ -75,7 +75,9 @@ jobs:
         run: ls -R
 
       - name: test harmony
-        run: ./harmony-linux -V
+        run: |
+          chmod +x ./harmony-linux
+          ./harmony-linux -V
 
 
 
