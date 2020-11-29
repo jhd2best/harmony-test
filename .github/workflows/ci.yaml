@@ -26,7 +26,7 @@ jobs:
         working-directory: harmony
       
       - name: Output preview works
-        run: echo "::debug::tag is v$image_version-$image_commit"
+        run: echo "tag is v${{ env.image_version }}-${{ env.image_commit }}"
 
 
   # build:
