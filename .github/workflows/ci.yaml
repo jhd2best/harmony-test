@@ -121,13 +121,12 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
-          context: .
+          context: ./harmony/scripts/docker
           file: ./Dockerfile
           push: true
           tags: |
             haodi/harmony:latest
             haodi/harmony:${{ env.image_version }}"
-        working-directory: harmony/scripts/docker
 
 
 
