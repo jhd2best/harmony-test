@@ -38,8 +38,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
-          context: .
-          file: ./harmony/scripts/docker/Dockerfile
+          context: ./harmony/scripts/docker
+          file: ./Dockerfile
           push: true
           tags: |
             haodi/harmony:latest
