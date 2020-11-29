@@ -20,6 +20,7 @@ jobs:
 
       - name: Build preview works
         run: |
+          mkdir $GITHUB_WORKSPACE/asset
           touch $GITHUB_WORKSPACE/asset/harmony
           touch $GITHUB_WORKSPACE/asset/harmony-1.deb
           touch $GITHUB_WORKSPACE/asset/harmony-1.rpm
