@@ -15,6 +15,7 @@ jobs:
       - name: Checkout harmony core code
         uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           path: harmony
 
       - name: Build preview works
