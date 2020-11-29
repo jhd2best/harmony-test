@@ -20,11 +20,13 @@ jobs:
       - name: Build preview works
         run: |
           VERSION=$(git rev-list --count HEAD)
+          COMMIT=$(git describe --always --long --dirty)
           echo "image_version=$VERSION" >> $GITHUB_ENV
+          echo "image_commit=$COMMIT" >> $GITHUB_ENV
         working-directory: harmony
       
       - name: Output preview works
-        run: echo ${{ github.image_version }}
+        run: echo "::debug:: tag is v${{ github.image_version }}-${{ github.image_commit }}"
 
   # build:
   #   name: Build harmony binary
