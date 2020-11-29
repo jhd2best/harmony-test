@@ -13,7 +13,10 @@ env:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-18.04
+    runs-on: ${{ matrix.os }}
+      matrix:
+        os: [ubuntu-18.04]
+
     steps:
       - name: Set up Go 1.14
         uses: actions/setup-go@v2
@@ -38,8 +41,9 @@ jobs:
           path: harmony
 
       - name: Build harmony binary
+        if: matrix.os == 'ubuntu-18.04'
         run: |
-          make
+          make linux_static
           mv ./bin/harmony ./bin/harmony-linux
         working-directory: harmony
 
@@ -78,6 +82,12 @@ jobs:
         run: |
           chmod +x ./harmony-linux
           ./harmony-linux -V
+
+    # docker-build:
+    #   needs: build
+    #   runs-on: ubuntu-18.04
+
+    #   steps:
 
 
 
