@@ -20,9 +20,9 @@ jobs:
 
       - name: Build preview works
         run: |
-          touch $GITHUB_WORKSPACE/harmony
-          touch $GITHUB_WORKSPACE/harmony-1.deb
-          touch $GITHUB_WORKSPACE/harmony-1.rpm
+          touch $GITHUB_WORKSPACE/asset/harmony
+          touch $GITHUB_WORKSPACE/asset/harmony-1.deb
+          touch $GITHUB_WORKSPACE/asset/harmony-1.rpm
           VERSION=$(git describe --always --long --dirty)
           VERSION_SHORT=$(git describe --always --long --dirty | awk -F '-' '{print $1}')
           echo "image_version=$VERSION" >> $GITHUB_ENV
@@ -64,7 +64,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: $GITHUB_WORKSPACE/harmony
+          asset_path: ./asset/harmony
           asset_name: harmony
           asset_content_type: application/octet-stream
 
@@ -74,7 +74,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: $GITHUB_WORKSPACE/harmony-1.deb
+          asset_path: ./asset/harmony-1.deb
           asset_name: harmony-1.deb
           asset_content_type: application/octet-stream
 
@@ -84,7 +84,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: $GITHUB_WORKSPACE/harmony-1.rpm
+          asset_path: ./asset/harmony-1.rpm
           asset_name: harmony-1.rpm
           asset_content_type: application/octet-stream
 
