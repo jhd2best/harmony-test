@@ -24,7 +24,7 @@ jobs:
         working-directory: harmony
       
       - name: Output preview works
-        run: echo ${{ image_version }}
+        run: echo ${{ github.image_version }}
 
   # build:
   #   name: Build harmony binary
