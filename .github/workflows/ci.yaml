@@ -7,88 +7,126 @@ on:
     tags:
       - published
 
-env:
-  IMAGE_NAME: image
-
 jobs:
-  build:
-    name: Build
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-18.04]
-
-    steps:
-      - name: Set up Go 1.14
-        uses: actions/setup-go@v2
-        with:
-          go-version: ^1.14.7
-
-      - name: Checkout dependence repo
-        uses: actions/checkout@v2
-        with:
-          repository: harmony-one/mcl
-          path: mcl
-
-      - name: Checkout dependence repo
-        uses: actions/checkout@v2
-        with:
-          repository: harmony-one/bls
-          path: bls
-
-      - name: Checkout harmony core code
-        uses: actions/checkout@v2
-        with:
-          path: harmony
-
-      - name: Build harmony binary
-        if: matrix.os == 'ubuntu-18.04'
-        run: |
-          make linux_static
-          mv ./bin/harmony ./bin/harmony-linux
-        working-directory: harmony
-
-      # - name: Test dir
-      #   run: mkdir harmony
-
-      # - name: Test file 1
-      #   run: touch "test1.txt" && echo "test me 111" >> test1.txt
-      #   working-directory: harmony
-
-      # - name: Test file 2
-      #   run: touch "test2.txt" && echo "test me 222" >> test2.txt
-      #   working-directory: harmony
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: harmony
-          path: harmony/bin/harmony-linux
-          retention-days: 1
-
-  test:
-    needs: build
+  temp:
     runs-on: ubuntu-18.04
 
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: harmony
+  steps:
+    - name: Checkout harmony core code
+      uses: actions/checkout@v2
+      with:
+        path: harmony
 
-      - name: Display structure of downloaded files
-        run: ls -R
+    - name: Build preview works
+      run: |
+        VERSION=$(git rev-list --count HEAD)
+        echo "image_version=$VERSION" >> $GITHUB_ENV
+      working-directory: harmony
+    
+    - name: Output preview works
+      run: echo ${{ image_version }}
 
-      - name: test harmony
-        run: |
-          chmod +x ./harmony-linux
-          ./harmony-linux -V
+  # build:
+  #   name: Build harmony binary
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-18.04]
 
-    # docker-build:
-    #   needs: build
-    #   runs-on: ubuntu-18.04
+  #   steps:
+  #     - name: Set up Go 1.14
+  #       uses: actions/setup-go@v2
+  #       with:
+  #         go-version: ^1.14.7
 
-    #   steps:
+  #     - name: Checkout dependence repo
+  #       uses: actions/checkout@v2
+  #       with:
+  #         repository: harmony-one/mcl
+  #         path: mcl
+
+  #     - name: Checkout dependence repo
+  #       uses: actions/checkout@v2
+  #       with:
+  #         repository: harmony-one/bls
+  #         path: bls
+
+  #     - name: Checkout harmony core code
+  #       uses: actions/checkout@v2
+  #       with:
+  #         path: harmony
+
+  #     - name: Build harmony binary
+  #       if: matrix.os == 'ubuntu-18.04'
+  #       run: |
+  #         make linux_static
+  #         mv ./bin/harmony ./bin/harmony-linux
+  #       working-directory: harmony
+
+  #     - name: Upload artifact
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: harmony
+  #         path: harmony/bin/harmony-linux
+  #         retention-days: 1
+
+  # test:
+  #   name: Test harmony binary
+  #   needs: build
+  #   runs-on: ubuntu-18.04
+
+  #   steps:
+  #     - name: Download artifact
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: harmony
+
+  #     - name: Display structure of downloaded files
+  #       run: ls -R
+
+  #     - name: test harmony
+  #       run: |
+  #         chmod +x ./harmony-linux
+  #         ./harmony-linux -V
+
+  # docker-build:
+  #   name: Build and push harmony docker image
+  #   needs: build
+  #   runs-on: ubuntu-18.04
+
+  #   steps:
+  #     - name: Checkout harmony core code
+  #       uses: actions/checkout@v2
+  #       with:
+  #         path: harmony
+
+  #     - name: Download artifact
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: harmony
+
+  #     - name: Build preview works
+  #       run: |
+  #         mv ./harmony-linux ./harmony/scripts/docker/harmony
+  #         VERSION=$(git rev-list --count HEAD)
+
+  #     - name: Login to DockerHub
+  #       uses: docker/login-action@v1 
+  #       with:
+  #         username: ${{ secrets.DOCKER_USERNAME }}
+  #         password: ${{ secrets.DOCKER_PASSWORD }}
+
+  #     - name: Build and push
+  #       uses: docker/build-push-action@v2
+  #       with:
+  #         context: .
+  #         file: ./Dockerfile
+  #         push: true
+  #         tags: |
+  #           haodi/harmony:latest
+  #           haodi/harmony:latest
+  #       working-directory: harmony/scripts/docker
+
 
 
 
