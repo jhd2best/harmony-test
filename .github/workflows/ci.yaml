@@ -26,7 +26,7 @@ jobs:
         working-directory: harmony
       
       - name: Output preview works
-        run: echo "::debug:: tag is v${{ github.image_version }}-${{ github.image_commit }}"
+        run: echo "::debug::tag is v${{ github.image_version }}-${{ github.image_commit }}"
 
   # build:
   #   name: Build harmony binary
