@@ -11,20 +11,20 @@ jobs:
   temp:
     runs-on: ubuntu-18.04
 
-  steps:
-    - name: Checkout harmony core code
-      uses: actions/checkout@v2
-      with:
-        path: harmony
+    steps:
+      - name: Checkout harmony core code
+        uses: actions/checkout@v2
+        with:
+          path: harmony
 
-    - name: Build preview works
-      run: |
-        VERSION=$(git rev-list --count HEAD)
-        echo "image_version=$VERSION" >> $GITHUB_ENV
-      working-directory: harmony
-    
-    - name: Output preview works
-      run: echo ${{ image_version }}
+      - name: Build preview works
+        run: |
+          VERSION=$(git rev-list --count HEAD)
+          echo "image_version=$VERSION" >> $GITHUB_ENV
+        working-directory: harmony
+      
+      - name: Output preview works
+        run: echo ${{ image_version }}
 
   # build:
   #   name: Build harmony binary
