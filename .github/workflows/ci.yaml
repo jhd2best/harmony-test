@@ -110,7 +110,7 @@ jobs:
 
       - name: Build preview works
         run: |
-          mv ~/harmony-linux ./scripts/docker/harmony
+          mv $GITHUB_WORKSPACE/harmony-linux ./scripts/docker/harmony
           VERSION=$(git describe --always --long --dirty)
           echo "image_version=$VERSION" >> $GITHUB_ENV
         working-directory: harmony
