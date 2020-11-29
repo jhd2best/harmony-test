@@ -43,7 +43,7 @@ jobs:
           push: true
           tags: |
             haodi/harmony:latest
-            haodi/harmony:${{ env.image_version }}"
+            haodi/harmony:${{ env.image_version }}
 
   # build:
   #   name: Build harmony binary
