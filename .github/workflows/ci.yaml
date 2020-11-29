@@ -8,128 +8,126 @@ on:
       - published
 
 jobs:
-  temp:
+  # temp:
+  #   runs-on: ubuntu-18.04
+
+  #   steps:
+  #     - name: Checkout harmony core code
+  #       uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 0
+  #         path: harmony
+
+  #     - name: Build preview works
+  #       run: |
+  #         VERSION=$(git describe --always --long --dirty)
+  #         echo "image_version=$VERSION" >> $GITHUB_ENV
+  #       working-directory: harmony
+      
+  #     - name: Output preview works
+  #       run: echo "tag is ${{ env.image_version }}"
+
+  build:
+    name: Build harmony binary
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04]
+
+    steps:
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.14.7
+
+      - name: Checkout dependence repo
+        uses: actions/checkout@v2
+        with:
+          repository: harmony-one/mcl
+          path: mcl
+
+      - name: Checkout dependence repo
+        uses: actions/checkout@v2
+        with:
+          repository: harmony-one/bls
+          path: bls
+
+      - name: Checkout harmony core code
+        uses: actions/checkout@v2
+        with:
+          path: harmony
+
+      - name: Build harmony binary
+        if: matrix.os == 'ubuntu-18.04'
+        run: |
+          make linux_static
+          mv ./bin/harmony ./bin/harmony-linux
+        working-directory: harmony
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: harmony
+          path: harmony/bin/harmony-linux
+          retention-days: 1
+
+  test:
+    name: Test harmony binary
+    needs: build
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: harmony
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: test harmony
+        run: |
+          chmod +x ./harmony-linux
+          ./harmony-linux -V
+
+  docker-build:
+    name: Build and push harmony docker image
+    needs: build
     runs-on: ubuntu-18.04
 
     steps:
       - name: Checkout harmony core code
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0
           path: harmony
+
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: harmony
 
       - name: Build preview works
         run: |
-          VERSION=$(git rev-list --count HEAD)
-          COMMIT=$(git describe --always --long --dirty)
+          mv ./harmony-linux ./harmony/scripts/docker/harmony
+          VERSION=$(git describe --always --long --dirty)
           echo "image_version=$VERSION" >> $GITHUB_ENV
-          echo "image_commit=$COMMIT" >> $GITHUB_ENV
-        working-directory: harmony
-      
-      - name: Output preview works
-        run: echo "tag is v${{ env.image_version }}-${{ env.image_commit }}"
 
+      - name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-  # build:
-  #   name: Build harmony binary
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     matrix:
-  #       os: [ubuntu-18.04]
-
-  #   steps:
-  #     - name: Set up Go 1.14
-  #       uses: actions/setup-go@v2
-  #       with:
-  #         go-version: ^1.14.7
-
-  #     - name: Checkout dependence repo
-  #       uses: actions/checkout@v2
-  #       with:
-  #         repository: harmony-one/mcl
-  #         path: mcl
-
-  #     - name: Checkout dependence repo
-  #       uses: actions/checkout@v2
-  #       with:
-  #         repository: harmony-one/bls
-  #         path: bls
-
-  #     - name: Checkout harmony core code
-  #       uses: actions/checkout@v2
-  #       with:
-  #         path: harmony
-
-  #     - name: Build harmony binary
-  #       if: matrix.os == 'ubuntu-18.04'
-  #       run: |
-  #         make linux_static
-  #         mv ./bin/harmony ./bin/harmony-linux
-  #       working-directory: harmony
-
-  #     - name: Upload artifact
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: harmony
-  #         path: harmony/bin/harmony-linux
-  #         retention-days: 1
-
-  # test:
-  #   name: Test harmony binary
-  #   needs: build
-  #   runs-on: ubuntu-18.04
-
-  #   steps:
-  #     - name: Download artifact
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         name: harmony
-
-  #     - name: Display structure of downloaded files
-  #       run: ls -R
-
-  #     - name: test harmony
-  #       run: |
-  #         chmod +x ./harmony-linux
-  #         ./harmony-linux -V
-
-  # docker-build:
-  #   name: Build and push harmony docker image
-  #   needs: build
-  #   runs-on: ubuntu-18.04
-
-  #   steps:
-  #     - name: Checkout harmony core code
-  #       uses: actions/checkout@v2
-  #       with:
-  #         path: harmony
-
-  #     - name: Download artifact
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         name: harmony
-
-  #     - name: Build preview works
-  #       run: |
-  #         mv ./harmony-linux ./harmony/scripts/docker/harmony
-  #         VERSION=$(git rev-list --count HEAD)
-
-  #     - name: Login to DockerHub
-  #       uses: docker/login-action@v1 
-  #       with:
-  #         username: ${{ secrets.DOCKER_USERNAME }}
-  #         password: ${{ secrets.DOCKER_PASSWORD }}
-
-  #     - name: Build and push
-  #       uses: docker/build-push-action@v2
-  #       with:
-  #         context: .
-  #         file: ./Dockerfile
-  #         push: true
-  #         tags: |
-  #           haodi/harmony:latest
-  #           haodi/harmony:latest
-  #       working-directory: harmony/scripts/docker
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            haodi/harmony:latest
+            haodi/harmony:${{ env.image_version }}"
+        working-directory: harmony/scripts/docker
 
 
 
