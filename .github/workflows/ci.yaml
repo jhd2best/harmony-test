@@ -22,8 +22,8 @@ jobs:
         run: |
           mkdir $GITHUB_WORKSPACE/asset
           touch $GITHUB_WORKSPACE/asset/harmony
-          touch $GITHUB_WORKSPACE/asset/harmony-1.deb
-          touch $GITHUB_WORKSPACE/asset/harmony-1.rpm
+          echo "1111" >> $GITHUB_WORKSPACE/asset/harmony
+          zip -q -r $GITHUB_WORKSPACE/harmony.zip $GITHUB_WORKSPACE/asset
           VERSION=$(git describe --always --long --dirty)
           VERSION_SHORT=$(git describe --always --long --dirty | awk -F '-' '{print $1}')
           echo "image_version=$VERSION" >> $GITHUB_ENV
@@ -65,29 +65,29 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./asset/harmony
-          asset_name: harmony
-          asset_content_type: application/octet-stream
+          asset_path: ./harmony.zip
+          asset_name: harmony.zip
+          asset_content_type: application/zip
 
-      - name: Upload Release Asset 2
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./asset/harmony-1.deb
-          asset_name: harmony-1.deb
-          asset_content_type: application/octet-stream
+      # - name: Upload Release Asset 2
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./asset/harmony-1.deb
+      #     asset_name: harmony-1.deb
+      #     asset_content_type: application/octet-stream
 
-      - name: Upload Release Asset 3
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./asset/harmony-1.rpm
-          asset_name: harmony-1.rpm
-          asset_content_type: application/octet-stream
+      # - name: Upload Release Asset 3
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./asset/harmony-1.rpm
+      #     asset_name: harmony-1.rpm
+      #     asset_content_type: application/octet-stream
 
 
   # build:
