@@ -32,13 +32,16 @@ jobs:
       - name: Output preview works
         run: echo "tag is ${{ env.image_version }}"
 
+      - name: Display structure of downloaded files
+        run: ls -R
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ env.image_version_short }}
+          tag_name: ${{ env.image_version_short }}
           release_name: Mainnet Release ${{ env.image_version_short }}
           draft: false
           prerelease: false
@@ -61,7 +64,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./harmony
+          asset_path: $GITHUB_WORKSPACE/harmony
           asset_name: harmony
           asset_content_type: application/octet-stream
 
@@ -71,7 +74,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./harmony-1.deb
+          asset_path: $GITHUB_WORKSPACE/harmony-1.deb
           asset_name: harmony-1.deb
           asset_content_type: application/octet-stream
 
@@ -81,7 +84,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./harmony-1.rpm
+          asset_path: $GITHUB_WORKSPACE/harmony-1.rpm
           asset_name: harmony-1.rpm
           asset_content_type: application/octet-stream
 
