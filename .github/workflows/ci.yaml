@@ -28,78 +28,49 @@ jobs:
           RUNNER_CONTEXT: ${{ toJson(runner) }}
         run: echo "$RUNNER_CONTEXT"
 
-      # - name: Build preview works
-      #   run: |
-      #     mkdir $GITHUB_WORKSPACE/asset
-      #     touch $GITHUB_WORKSPACE/asset/harmony
-      #     echo "1111" >> $GITHUB_WORKSPACE/asset/harmony
-      #     zip -q -r $GITHUB_WORKSPACE/harmony.zip $GITHUB_WORKSPACE/asset
-      #     VERSION=$(git describe --always --long --dirty)
-      #     VERSION_SHORT=$(git describe --always --long --dirty | awk -F '-' '{print $1}')
-      #     echo "image_version=$VERSION" >> $GITHUB_ENV
-      #     echo "image_version_short=$VERSION_SHORT" >> $GITHUB_ENV
-      #   working-directory: harmony
+      - name: Build preview works
+        run: |
+          mkdir $GITHUB_WORKSPACE/asset
+          touch $GITHUB_WORKSPACE/asset/harmony
+          echo "1111" >> $GITHUB_WORKSPACE/asset/harmony
+          zip -q -r $GITHUB_WORKSPACE/harmony.zip $GITHUB_WORKSPACE/asset
+          VERSION=$(git describe --always --long --dirty)
+          VERSION_SHORT=$(git describe --always --long --dirty | awk -F '-' '{print $1}')
+          echo "image_version=$VERSION" >> $GITHUB_ENV
+          echo "image_version_short=$VERSION_SHORT" >> $GITHUB_ENV
+        working-directory: harmony
       
-      # - name: Output preview works
-      #   run: echo "tag is ${{ env.image_version }}"
+      - name: Output preview works
+        run: echo "tag is ${{ env.image_version }}"
 
-      # - name: Display structure of downloaded files
-      #   run: ls -R
+      - name: Display structure of downloaded files
+        run: ls -R
 
-      # - name: Create Release
-      #   id: create_release
-      #   uses: actions/create-release@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     tag_name: ${{ env.image_version_short }}
-      #     release_name: Mainnet Release ${{ env.image_version_short }}
-      #     draft: false
-      #     prerelease: false
-      #     body: |
-      #       This is a major release with many core feature enhancement.
-      #       It is mandatory for all validators to upgrade.
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.image_version_short }}
+          release_name: Mainnet Release ${{ env.image_version_short }}
+          draft: false
+          prerelease: false
+          body: |
+            ${{ github.event.commits[0].message }}
+      
+            The released version: ${{ env.image_version }}
 
-      #       The major features included in this release.
-      #       - async block proposal
-      #       - aggregated consensus message of multi-bls keys
-      #       - rosetta API public release
-      #       - synchronous view change
-      #       - dynamic DNS nodes
-      #       - expose EVM tracer API
-
-      #       The released version: ${{ env.image_version }}
-
-      # - name: Upload Release Asset 1
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./harmony.zip
-      #     asset_name: harmony.zip
-      #     asset_content_type: application/zip
-
-      # - name: Upload Release Asset 2
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./asset/harmony-1.deb
-      #     asset_name: harmony-1.deb
-      #     asset_content_type: application/octet-stream
-
-      # - name: Upload Release Asset 3
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./asset/harmony-1.rpm
-      #     asset_name: harmony-1.rpm
-      #     asset_content_type: application/octet-stream
-
+      - name: Upload Release Asset 1
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./harmony.zip
+          asset_name: harmony.zip
+          asset_content_type: application/zip
+          
 
   # build:
   #   name: Build harmony binary
@@ -232,10 +203,10 @@ jobs:
   #     - name: Display structure of downloaded files
   #       run: ls -R
 
-  #     - name: Create preview works
-  #       run: |
+  #     # - name: Create preview works
+  #     #   run: |
           
-  #       working-directory: harmony
+  #     #   working-directory: harmony
 
   #     - name: Create Release
   #       id: create_release
@@ -248,16 +219,7 @@ jobs:
   #         draft: false
   #         prerelease: false
   #         body: |
-  #           This is a major release with many core feature enhancement.
-  #           It is mandatory for all validators to upgrade.
-
-  #           The major features included in this release.
-  #           - async block proposal
-  #           - aggregated consensus message of multi-bls keys
-  #           - rosetta API public release
-  #           - synchronous view change
-  #           - dynamic DNS nodes
-  #           - expose EVM tracer API
+  #           ${{ github.event.commits[0].message }}
 
   #           The released version: ${{ env.image_version }}
 
