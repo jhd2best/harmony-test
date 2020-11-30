@@ -127,12 +127,14 @@ jobs:
           RUNNER_OS: ${{ runner.os }}
         run: |
           RUNNER_OS_LOW=$(echo $RUNNER_OS | tr A-Z a-z)
-          make linux_static
+          make
           mv ./bin/0 ./bin/harmony-$RUNNER_OS_LOW
+          ls -R ../mcl
+          ls -R ../bls
         working-directory: harmony
 
       - name: Display structure of downloaded files
-        run: ls -l ./harmony/bin
+        run: ls -R ./harmony
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
