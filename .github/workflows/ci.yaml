@@ -122,12 +122,15 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R $HOME
 
-      # - name: Upload artifact
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: harmony
-      #     path: harmony/bin/harmony-linux
-      #     retention-days: 1
+      - name: Upload artifact
+        if: matrix.os == 'ubuntu-18.04'
+        uses: actions/upload-artifact@v2
+        with:
+          name: harmony
+          path: |
+            harmony/bin/harmony-linux
+            ${{ env.HOME }}/debbuild/harmony-${{ env.build_version }}-${{ env.build_release }}.deb
+          retention-days: 1
 
   # test:
   #   name: Test harmony binary
