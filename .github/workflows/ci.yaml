@@ -104,13 +104,13 @@ jobs:
           path: harmony
           fetch-depth: 0
 
-      - name: Get latest version and release
-        run: |
-          VERSION=$(git tag -l --sort=-v:refname | head -n 1 | tr -d v)
-          RELEASE=$(git describe --long | cut -f2 -d-)
-          echo "build_version=$VERSION" >> $GITHUB_ENV
-          echo "build_release=$RELEASE" >> $GITHUB_ENV
-        working-directory: harmony
+      # - name: Get latest version and release
+      #   run: |
+      #     VERSION=$(git tag -l --sort=-v:refname | head -n 1 | tr -d v)
+      #     RELEASE=$(git describe --long | cut -f2 -d-)
+      #     echo "build_version=$VERSION" >> $GITHUB_ENV
+      #     echo "build_release=$RELEASE" >> $GITHUB_ENV
+      #   working-directory: harmony
 
       - name: Build harmony binary and packages for Linux
         if: matrix.os == 'ubuntu-18.04'
