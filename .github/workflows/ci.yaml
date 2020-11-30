@@ -117,19 +117,18 @@ jobs:
           make linux_static
           make deb
           mv ./bin/harmony ./bin/harmony-linux
+          mv $HOME/debbuild/harmony-$build_version-$build_release.deb ./bin/
         working-directory: harmony
 
       - name: Display structure of downloaded files
-        run: ls -R $HOME
+        run: ls -R ./harmony/bin
 
       - name: Upload artifact
         if: matrix.os == 'ubuntu-18.04'
         uses: actions/upload-artifact@v2
         with:
           name: harmony
-          path: |
-            harmony/bin/harmony-linux
-            ${{ env.HOME }}/debbuild/harmony-${{ env.build_version }}-${{ env.build_release }}.deb
+          path: harmony/bin/*
           retention-days: 1
 
   # test:
