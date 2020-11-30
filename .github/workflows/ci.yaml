@@ -128,11 +128,10 @@ jobs:
         run: |
           RUNNER_OS_LOW=$(echo $RUNNER_OS | tr A-Z a-z)
           make
-          mv ./bin/harmony ./bin/harmony-$RUNNER_OS_LOW
         working-directory: harmony
 
       - name: Display structure of downloaded files
-        run: ls -R ./harmony/bin
+        run: ls -R ./harmony
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
