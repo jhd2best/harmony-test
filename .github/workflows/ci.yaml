@@ -129,7 +129,7 @@ jobs:
           mv ./bin/0 ./bin/harmony-macos/harmony
           mv ../mcl/lib/libmcl.dylib ./bin/harmony-macos/lib/
           mv ../bls/lib/libbls384_256.dylib ./bin/harmony-macos/lib/
-          zip ./bin/harmony-macos.zip ./bin/harmony-macos/*
+          zip -qr ./bin/harmony-macos.zip ./bin/harmony-macos/*
           rm -rf ./bin/harmony-macos
         working-directory: harmony
 
