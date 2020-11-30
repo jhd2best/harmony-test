@@ -116,7 +116,6 @@ jobs:
         run: |
           make linux_static
           make deb
-          make rpm
           mv ./bin/harmony ./bin/harmony-linux
         working-directory: harmony
 
