@@ -111,34 +111,24 @@ jobs:
           echo "build_release=$RELEASE" >> $GITHUB_ENV
         working-directory: harmony
 
-      - name: Build harmony binary
+      - name: Build harmony binary and packages
         if: matrix.os == 'ubuntu-18.04'
         run: |
           make linux_static
+          make deb
+          make rpm
           mv ./bin/harmony ./bin/harmony-linux
         working-directory: harmony
 
-      - name: Build harmony deb
-        if: matrix.os == 'ubuntu-18.04'
-        run: |
-          make deb
-        working-directory: harmony
-
-      - name: Build harmony rpm
-        if: matrix.os == 'ubuntu-18.04'
-        run: |
-          make rpm
-        working-directory: harmony
-
       - name: Display structure of downloaded files
-        run: ls -R
+        run: ls -R $HOME
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: harmony
-          path: harmony/bin/harmony-linux
-          retention-days: 1
+      # - name: Upload artifact
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: harmony
+      #     path: harmony/bin/harmony-linux
+      #     retention-days: 1
 
   # test:
   #   name: Test harmony binary
