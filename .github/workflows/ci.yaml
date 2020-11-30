@@ -77,7 +77,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04]
+        # os: [ubuntu-18.04, macos-10.15, windows-2019]
+        os: [macos-10.15]
 
     steps:
       - name: Set up Go 1.14
@@ -111,7 +112,7 @@ jobs:
           echo "build_release=$RELEASE" >> $GITHUB_ENV
         working-directory: harmony
 
-      - name: Build harmony binary and packages
+      - name: Build harmony binary and packages for Linux
         if: matrix.os == 'ubuntu-18.04'
         run: |
           make linux_static
@@ -120,11 +121,20 @@ jobs:
           mv $HOME/debbuild/harmony-$build_version-$build_release.deb ./bin/
         working-directory: harmony
 
+      - name: Build harmony binary and packages not for Linux
+        if: matrix.os != 'ubuntu-18.04'
+        env:
+          RUNNER_OS: ${{ runner.os }}
+        run: |
+          RUNNER_OS_LOW=$(echo $RUNNER_OS | tr A-Z a-z)
+          make
+          mv ./bin/harmony ./bin/harmony-$RUNNER_OS_LOW
+        working-directory: harmony
+
       - name: Display structure of downloaded files
         run: ls -R ./harmony/bin
 
       - name: Upload artifact
-        if: matrix.os == 'ubuntu-18.04'
         uses: actions/upload-artifact@v2
         with:
           name: harmony
