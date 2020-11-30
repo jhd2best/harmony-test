@@ -78,7 +78,7 @@ jobs:
     strategy:
       matrix:
         # os: [ubuntu-18.04, macos-10.15, windows-2019]
-        os: [macos-10.15]
+        os: [windows-2019]
 
     steps:
       - name: Set up Go 1.14
@@ -133,8 +133,14 @@ jobs:
           rm -rf ./bin/harmony-macos
         working-directory: harmony
 
+      - name: Build harmony binary and packages for Windows
+        if: matrix.os == 'windows-2019'
+        run: |
+          make
+        working-directory: harmony
+
       - name: Display structure of downloaded files
-        run: ls -R ./harmony
+        run: ls -R ./harmony/bin
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
