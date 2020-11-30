@@ -103,14 +103,6 @@ jobs:
           path: harmony
           fetch-depth: 0
 
-      - name: Get latest version
-        run: |
-          VERSION=$(git describe --always --long --dirty)
-          VERSION_SHORT=$(git describe --always --long --dirty | awk -F '-' '{print $1}')
-          echo "image_version=$VERSION" >> $GITHUB_ENV
-          echo "image_version_short=$VERSION_SHORT" >> $GITHUB_ENV
-        working-directory: harmony
-
       - name: Build harmony binary
         if: matrix.os == 'ubuntu-18.04'
         run: |
@@ -154,6 +146,15 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: harmony
+          fetch-depth: 0
+
+      - name: Get latest version
+        run: |
+          VERSION=$(git describe --always --long --dirty)
+          VERSION_SHORT=$(git describe --always --long --dirty | awk -F '-' '{print $1}')
+          echo "image_version=$VERSION" >> $GITHUB_ENV
+          echo "image_version_short=$VERSION_SHORT" >> $GITHUB_ENV
+        working-directory: harmony
 
       - name: Download artifact
         uses: actions/download-artifact@v2
@@ -194,6 +195,15 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: harmony
+          fetch-depth: 0
+
+      - name: Get latest version
+        run: |
+          VERSION=$(git describe --always --long --dirty)
+          VERSION_SHORT=$(git describe --always --long --dirty | awk -F '-' '{print $1}')
+          echo "image_version=$VERSION" >> $GITHUB_ENV
+          echo "image_version_short=$VERSION_SHORT" >> $GITHUB_ENV
+        working-directory: harmony
 
       - name: Download artifact
         uses: actions/download-artifact@v2
