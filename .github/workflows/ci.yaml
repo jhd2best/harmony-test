@@ -127,7 +127,7 @@ jobs:
           RUNNER_OS: ${{ runner.os }}
         run: |
           RUNNER_OS_LOW=$(echo $RUNNER_OS | tr A-Z a-z)
-          make
+          make linux_static
           mv ./bin/0 ./bin/harmony-$RUNNER_OS_LOW
         working-directory: harmony
 
