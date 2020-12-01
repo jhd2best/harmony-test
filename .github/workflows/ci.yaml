@@ -126,24 +126,17 @@ jobs:
         if: matrix.os == 'macos-10.15'
         run: |
           make
-          mkdir -p ./bin/harmony-macos/lib
-          mv ./bin/0 ./bin/harmony-macos/harmony
-          mv ../mcl/lib/libmcl.dylib ./bin/harmony-macos/lib/
-          mv ../bls/lib/libbls384_256.dylib ./bin/harmony-macos/lib/
-          cd ./bin
-          zip -qr ./harmony-macos.zip ./harmony-macos/*
-          rm -rf ./harmony-macos
         working-directory: harmony
 
       - name: Display structure of downloaded files
         run: ls -R ./harmony/bin
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: harmony
-          path: harmony/bin/*
-          retention-days: 1
+      # - name: Upload artifact
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: harmony
+      #     path: harmony/bin/*
+      #     retention-days: 1
 
   # test:
   #   name: Test harmony binary
