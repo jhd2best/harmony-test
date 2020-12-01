@@ -158,10 +158,10 @@ jobs:
 
       - name: Get latest version
         run: |
-          VERSION=$(git describe --always --long --dirty)
-          VERSION_SHORT=$(git describe --always --long --dirty | awk -F '-' '{print $1}')
-          echo "image_version=$VERSION" >> $GITHUB_ENV
-          echo "image_version_short=$VERSION_SHORT" >> $GITHUB_ENV
+          VERSION=$(git tag -l --sort=-v:refname | head -n 1 | tr -d v)
+          RELEASE=$(git describe --long | cut -f2 -d-)
+          echo "build_version=$VERSION" >> $GITHUB_ENV
+          echo "build_release=$RELEASE" >> $GITHUB_ENV
         working-directory: harmony
 
       - name: Download artifact
@@ -191,7 +191,7 @@ jobs:
           push: true
           tags: |
             haodi/harmony:latest
-            haodi/harmony:${{ env.image_version }}
+            haodi/harmony:${{ env.build_version }}-${{ env.build_release }}
 
   release-page:
     name: Create and publish release page
@@ -208,10 +208,12 @@ jobs:
 
       - name: Get latest version
         run: |
-          VERSION=$(git describe --always --long --dirty)
-          VERSION_SHORT=$(git describe --always --long --dirty | awk -F '-' '{print $1}')
-          echo "image_version=$VERSION" >> $GITHUB_ENV
-          echo "image_version_short=$VERSION_SHORT" >> $GITHUB_ENV
+          VERSION=$(git tag -l --sort=-v:refname | head -n 1 | tr -d v)
+          VERSION_LONG=$(git describe --always --long --dirty)
+          RELEASE=$(git describe --long | cut -f2 -d-)
+          echo "build_version=$VERSION" >> $GITHUB_ENV
+          echo "build_version_long=$VERSION_LONG" >> $GITHUB_ENV
+          echo "build_release=$RELEASE" >> $GITHUB_ENV
         working-directory: harmony
 
       - name: Download artifact
@@ -228,14 +230,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.image_version_short }}
-          release_name: Mainnet Release ${{ env.image_version_short }}
+          tag_name: ${{ env.build_version }}
+          release_name: Mainnet Release ${{ env.build_version }}
           draft: false
           prerelease: false
           body: |
             ${{ github.event.commits[0].message }}
 
-            The released version: ${{ env.image_version }}
+            The released version: ${{ env.build_version_long }}
 
       - name: Upload harmony binary for Linux
         uses: actions/upload-release-asset@v1
@@ -244,8 +246,18 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./harmony-linux
-          asset_name: harmony-linux-${{ env.image_version_short }}
+          asset_name: harmony-linux-${{ env.build_version }}
           asset_content_type: application/octet-stream
+
+      - name: Upload harmony deb package for Linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./harmony-${{ env.build_version }}-${{ env.build_release }}.deb
+          asset_name: harmony-linux-${{ env.build_version }}.deb
+          asset_content_type: application/x-deb
 
       - name: Upload harmony binary for MacOS
         uses: actions/upload-release-asset@v1
@@ -254,5 +266,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./harmony-macos.zip
-          asset_name: harmony-macos-${{ env.image_version_short }}.zip
+          asset_name: harmony-macos-${{ env.build_version }}.zip
           asset_content_type: application/zip
