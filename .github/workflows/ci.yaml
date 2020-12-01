@@ -122,14 +122,14 @@ jobs:
           mv $HOME/debbuild/harmony-$build_version-$build_release.deb ./bin/
         working-directory: harmony
 
+      - name: Display structure of downloaded files
+        run: ls -R /usr/local/opt/openssl@1.1
+
       - name: Build harmony binary and packages for MacOS
         if: matrix.os == 'macos-10.15'
         run: |
           brew install bash
-          brew install gmp
-          brew install openssl
           sudo ln -sf /usr/local/opt/openssl@1.1 /usr/local/opt/openssl
-          make
         working-directory: harmony
 
       - name: Display structure of downloaded files
