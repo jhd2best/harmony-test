@@ -129,21 +129,20 @@ jobs:
           sudo rm -f /usr/local/opt/openssl
           sudo ln -sf /usr/local/opt/openssl@1.1 /usr/local/opt/openssl
           make
-          cd ./bin
-          mkdir ./lib && mv ./*.dylib ./lib && rm -f ./bootnode
+          cd ./bin && mkdir ./lib && mv ./*.dylib ./lib && rm -f ./bootnode
           zip -qr ./harmony-macos.zip ./*
-          rm -f `ls * | egrep -v harmony-macos.zip`
+          rm -rf `ls * | egrep -v harmony-macos.zip`
         working-directory: harmony
 
       - name: Display structure of downloaded files
         run: ls -R ./harmony/bin
 
-      # - name: Upload artifact
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: harmony
-      #     path: harmony/bin/*
-      #     retention-days: 1
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: harmony
+          path: harmony/bin/*
+          retention-days: 1
 
   # test:
   #   name: Test harmony binary
