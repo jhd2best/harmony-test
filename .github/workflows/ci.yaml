@@ -78,7 +78,7 @@ jobs:
     strategy:
       matrix:
         # os: [ubuntu-18.04, macos-10.15, windows-2019]
-        os: [ubuntu-18.04, macos-10.15]
+        os: [macos-10.15]
 
     steps:
       - name: Set up Go 1.14
@@ -102,6 +102,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: harmony
+          ref: main
           fetch-depth: 0
 
       - name: Get latest version and release
@@ -133,12 +134,6 @@ jobs:
           zip -qr ./harmony-macos.zip ./harmony-macos/*
           rm -rf ./harmony-macos
         working-directory: harmony
-
-      # - name: Build harmony binary and packages for Windows
-      #   if: matrix.os == 'windows-2019'
-      #   run: |
-      #     make
-      #   working-directory: harmony
 
       - name: Display structure of downloaded files
         run: ls -R ./harmony/bin
@@ -179,6 +174,7 @@ jobs:
   #       uses: actions/checkout@v2
   #       with:
   #         path: harmony
+  #         ref: main
   #         fetch-depth: 0
 
   #     - name: Get latest version
@@ -218,70 +214,71 @@ jobs:
   #           haodi/harmony:latest
   #           haodi/harmony:${{ env.image_version }}
 
-  release-page:
-    name: Create and publish release page
-    needs: build
-    runs-on: ubuntu-18.04
+  # release-page:
+  #   name: Create and publish release page
+  #   needs: build
+  #   runs-on: ubuntu-18.04
 
-    steps:
-      - name: Checkout harmony core code
-        uses: actions/checkout@v2
-        with:
-          path: harmony
-          fetch-depth: 0
+  #   steps:
+  #     - name: Checkout harmony core code
+  #       uses: actions/checkout@v2
+  #       with:
+  #         path: harmony
+  #         ref: main
+  #         fetch-depth: 0
 
-      - name: Get latest version
-        run: |
-          VERSION=$(git describe --always --long --dirty)
-          VERSION_SHORT=$(git describe --always --long --dirty | awk -F '-' '{print $1}')
-          echo "image_version=$VERSION" >> $GITHUB_ENV
-          echo "image_version_short=$VERSION_SHORT" >> $GITHUB_ENV
-        working-directory: harmony
+  #     - name: Get latest version
+  #       run: |
+  #         VERSION=$(git describe --always --long --dirty)
+  #         VERSION_SHORT=$(git describe --always --long --dirty | awk -F '-' '{print $1}')
+  #         echo "image_version=$VERSION" >> $GITHUB_ENV
+  #         echo "image_version_short=$VERSION_SHORT" >> $GITHUB_ENV
+  #       working-directory: harmony
 
-      - name: Download artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: harmony
+  #     - name: Download artifact
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: harmony
 
-      - name: Display structure of downloaded files
-        run: ls -R
+  #     - name: Display structure of downloaded files
+  #       run: ls -R
 
-      # - name: Create preview works
-      #   run: |
+  #     # - name: Create preview works
+  #     #   run: |
           
-      #   working-directory: harmony
+  #     #   working-directory: harmony
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.image_version_short }}
-          release_name: Mainnet Release ${{ env.image_version_short }}
-          draft: false
-          prerelease: false
-          body: |
-            ${{ github.event.commits[0].message }}
+  #     - name: Create Release
+  #       id: create_release
+  #       uses: actions/create-release@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         tag_name: ${{ env.image_version_short }}
+  #         release_name: Mainnet Release ${{ env.image_version_short }}
+  #         draft: false
+  #         prerelease: false
+  #         body: |
+  #           ${{ github.event.commits[0].message }}
 
-            The released version: ${{ env.image_version }}
+  #           The released version: ${{ env.image_version }}
 
-      - name: Upload harmony binary for Linux
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./harmony-linux
-          asset_name: harmony-linux-${{ env.image_version_short }}
-          asset_content_type: application/octet-stream
+  #     - name: Upload harmony binary for Linux
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create_release.outputs.upload_url }}
+  #         asset_path: ./harmony-linux
+  #         asset_name: harmony-linux-${{ env.image_version_short }}
+  #         asset_content_type: application/octet-stream
 
-      - name: Upload harmony binary for MacOS
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./harmony-macos.zip
-          asset_name: harmony-macos-${{ env.image_version_short }}.zip
-          asset_content_type: application/zip
+  #     - name: Upload harmony binary for MacOS
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create_release.outputs.upload_url }}
+  #         asset_path: ./harmony-macos.zip
+  #         asset_name: harmony-macos-${{ env.image_version_short }}.zip
+  #         asset_content_type: application/zip
