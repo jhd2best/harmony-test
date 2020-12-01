@@ -129,6 +129,10 @@ jobs:
           sudo rm -f /usr/local/opt/openssl
           sudo ln -sf /usr/local/opt/openssl@1.1 /usr/local/opt/openssl
           make
+          cd ./bin
+          mkdir ./lib && mv ./*.dylib ./lib && rm -f ./bootnode
+          zip -qr ./harmony-macos.zip ./*
+          rm -f `ls * | egrep -v harmony-macos.zip`
         working-directory: harmony
 
       - name: Display structure of downloaded files
