@@ -125,7 +125,7 @@ jobs:
       - name: Build harmony binary and packages for MacOS
         if: matrix.os == 'macos-10.15'
         run: |
-          bash --version
+          /usr/local/bin/bash --version
         working-directory: harmony
 
       - name: Display structure of downloaded files
