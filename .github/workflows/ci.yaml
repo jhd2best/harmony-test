@@ -3,7 +3,7 @@ name: release harmony
 on:
   push:
     tags:
-      - refs/tags/v*
+      - v*
 
 jobs:
   # temp:
