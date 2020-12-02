@@ -235,7 +235,7 @@ jobs:
           draft: true
           prerelease: false
           body: |
-            ${{ github.event.commits[0].message }}
+            ${{ github.event.head_commit.message }}
 
             The released version: ${{ env.build_version_long }}
 
