@@ -70,6 +70,7 @@ jobs:
   #         asset_content_type: application/zip
 
 
+
   build:
     name: Build harmony binary
     runs-on: ${{ matrix.os }}
