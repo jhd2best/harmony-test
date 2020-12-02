@@ -2,9 +2,8 @@ name: release harmony
 
 on:
   push:
-    branches:
-      - main
-      - refs/tags/published
+    tags:
+      - refs/tags/v*
 
 jobs:
   # temp:
@@ -232,7 +231,7 @@ jobs:
   #       with:
   #         tag_name: ${{ env.build_version }}
   #         release_name: Mainnet Release ${{ env.build_version }}
-  #         draft: false
+  #         draft: true
   #         prerelease: false
   #         body: |
   #           ${{ github.event.commits[0].message }}
