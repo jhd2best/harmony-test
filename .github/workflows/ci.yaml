@@ -227,7 +227,7 @@ jobs:
         env:
           TAG_SHA: ${{ github.event.after }}
         run: |
-          TAG_MESSAGE=$(curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/jhd2best/harmony-test/git/tags/$TAG_SHA | jq '.message' | tr -d "\"")
+          TAG_MESSAGE=$(curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/jhd2best/harmony-test/git/tags/$TAG_SHA | jq '.message')
           echo "build_tag_message=$TAG_MESSAGE" >> $GITHUB_ENV
 
       - name: Create Release
