@@ -195,7 +195,6 @@ jobs:
 
   release-page:
     name: Create and publish release page
-    needs: build
     runs-on: ubuntu-18.04
 
     steps:
