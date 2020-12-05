@@ -209,6 +209,7 @@ jobs:
 
   release-page:
     name: Create and publish release page
+    needs: check
     runs-on: ubuntu-18.04
 
     steps:
