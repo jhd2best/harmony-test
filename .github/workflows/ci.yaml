@@ -74,6 +74,11 @@ jobs:
     runs-on: ubuntu-18.04
 
     steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+  
       - name: Get tag message
         env:
           TAG_SHA: ${{ github.event.after }}
@@ -255,7 +260,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.build_version }}
+          tag_name: ${{ github.ref }}
           release_name: Mainnet Release ${{ env.build_version }}
           draft: true
           prerelease: false
