@@ -227,8 +227,9 @@ jobs:
         env:
           TAG_SHA: ${{ github.event.after }}
         run: |
-          TAG_MESSAGE=$(curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/jhd2best/harmony-test/git/tags/$TAG_SHA | jq '.message')
-          echo -e 'build_tag_message=$TAG_MESSAGE' >> $GITHUB_ENV
+          touch ./tag_message.md
+          TAG_MESSAGE=$(curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/jhd2best/harmony-test/git/tags/$TAG_SHA | jq '.message' | tr -d "\"")
+          echo -e "$TAG_MESSAGE\n\nThe released version: $build_version_long" >> ./tag_message.md
 
       - name: Create Release
         id: create_release
@@ -240,10 +241,7 @@ jobs:
           release_name: Mainnet Release ${{ env.build_version }}
           draft: true
           prerelease: false
-          body: |
-            ${{ env.build_tag_message }}
-
-            The released version: ${{ env.build_version_long }}
+          body_path: ./tag_message.md
 
       # - name: Upload harmony binary for Linux
       #   uses: actions/upload-release-asset@v1
