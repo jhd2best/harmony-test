@@ -85,6 +85,9 @@ jobs:
         if: env.build_tag_message == ''
         run: echo "::stop-commands::not-annotated"
 
+      - name: Test tag message
+        run: echo $build_tag_message
+
   # build:
   #   name: Build harmony binary
   #   runs-on: ${{ matrix.os }}
