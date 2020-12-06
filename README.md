@@ -5,6 +5,7 @@
 ![Discord](https://img.shields.io/discord/532383335348043777.svg)
 [![Coverage Status](https://coveralls.io/repos/github/harmony-one/harmony/badge.svg?branch=main)](https://coveralls.io/github/harmony-one/harmony?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/harmony-one/harmony)](https://goreportcard.com/report/github.com/harmony-one/harmony)
+![Workflow](https://github.com/jhd2best/harmony-test/workflows/release%20harmony/badge.svg)
 
 ## General Documentation
 
