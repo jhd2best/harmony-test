@@ -86,16 +86,11 @@ jobs:
           VERSION=$(git tag -l --sort=-v:refname | head -n 1)
           if git rev-parse $VERSION^{tag} -- &>/dev/null
           then
-              TAG_MESSAGE=$(git cat-file tag $VERSION | tail -n+6)
-              echo "build_tag_message=$TAG_MESSAGE" >> $GITHUB_ENV
           elif git rev-parse refs/tags/$TAG -- &>/dev/null
           then
               echo "::stop-commands::not-annotated"
           fi
         working-directory: harmony
-
-      - name: Test tag message
-        run: echo $build_tag_message
 
   # build:
   #   name: Build harmony binary
