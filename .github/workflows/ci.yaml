@@ -92,6 +92,7 @@ jobs:
           then
               echo "::stop-commands::not-annotated"
           fi
+        working-directory: harmony
 
       - name: Test tag message
         run: echo $build_tag_message
@@ -256,6 +257,7 @@ jobs:
           touch ./tag_message.md
           TAG_MESSAGE=$(git cat-file tag v$VERSION | tail -n+6)
           echo -e "$TAG_MESSAGE\n\nThe released version: $build_version_long" >> ./tag_message.md
+        working-directory: harmony
 
       - name: Create Release
         id: create_release
@@ -267,7 +269,7 @@ jobs:
           release_name: Mainnet Release ${{ env.build_version }}
           draft: true
           prerelease: false
-          body_path: ./tag_message.md
+          body_path: ./harmony/tag_message.md
 
       # - name: Upload harmony binary for Linux
       #   uses: actions/upload-release-asset@v1
