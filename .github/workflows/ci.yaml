@@ -84,7 +84,8 @@ jobs:
       - name: Get tag message
         run: |
           VERSION=$(git tag -l --sort=-v:refname | head -n 1)
-          if [git rev-parse $VERSION^{tag} -- &>/dev/null];then
+          if git rev-parse $VERSION^{tag} -- &>/dev/null
+          then
             echo "annotated"
           else
             echo "::stop-commands::not-annotated"
@@ -249,7 +250,7 @@ jobs:
           TAG_SHA: ${{ github.event.after }}
         run: |
           touch ./tag_message.md
-          TAG_MESSAGE=$(git cat-file tag v$VERSION | tail -n+6)
+          TAG_MESSAGE=$(git cat-file tag v$build_version | tail -n+6)
           echo -e "$TAG_MESSAGE\n\nThe released version: $build_version_long" >> ./tag_message.md
         working-directory: harmony
 
