@@ -72,6 +72,7 @@ jobs:
   check:
     name: Per-check for current tag
     runs-on: ubuntu-18.04
+    continue-on-error: false
 
     steps:
       - name: Checkout harmony core code
@@ -88,7 +89,7 @@ jobs:
           then
             echo "annotated"
           else
-            echo "::stop-commands::pause-check"
+            echo "::error::not annotated"
           fi
         working-directory: harmony
 
