@@ -94,6 +94,7 @@ jobs:
           fi
         working-directory: harmony
 
+
   # build:
   #   name: Build harmony binary
   #   runs-on: ${{ matrix.os }}
