@@ -88,7 +88,7 @@ jobs:
           then
             echo "annotated"
           else
-            echo "::stop-commands::"
+            echo "::stop-commands::pause-check"
           fi
         working-directory: harmony
 
