@@ -84,11 +84,10 @@ jobs:
       - name: Get tag message
         run: |
           VERSION=$(git tag -l --sort=-v:refname | head -n 1)
-          if git rev-parse $VERSION^{tag} -- &>/dev/null
-          then
-          elif git rev-parse refs/tags/$TAG -- &>/dev/null
-          then
-              echo "::stop-commands::not-annotated"
+          if [git rev-parse $VERSION^{tag} -- &>/dev/null];then
+            echo "annotated"
+          else
+            echo "::stop-commands::not-annotated"
           fi
         working-directory: harmony
 
