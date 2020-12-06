@@ -74,21 +74,24 @@ jobs:
     runs-on: ubuntu-18.04
 
     steps:
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-  
-      - name: Get tag message
-        env:
-          TAG_SHA: ${{ github.event.after }}
-        run: |
-          TAG_MESSAGE=$(curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/jhd2best/harmony-test/git/tags/$TAG_SHA | jq '.message' | tr -d "\"")
-          echo "build_tag_message=$TAG_MESSAGE" >> $GITHUB_ENV
+      - name: Checkout harmony core code
+        uses: actions/checkout@v2
+        with:
+          path: harmony
+          ref: main
+          fetch-depth: 0
 
-      - name: Stop if the tag was not annotated
-        if: env.build_tag_message == ''
-        run: echo "::stop-commands::not-annotated"
+      - name: Get tag message
+        run: |
+          VERSION=$(git tag -l --sort=-v:refname | head -n 1)
+          if git rev-parse $VERSION^{tag} -- &>/dev/null
+          then
+              TAG_MESSAGE=$(git cat-file tag $VERSION | tail -n+6)
+              echo "build_tag_message=$TAG_MESSAGE" >> $GITHUB_ENV
+          elif git rev-parse refs/tags/$TAG -- &>/dev/null
+          then
+              echo "::stop-commands::not-annotated"
+          fi
 
       - name: Test tag message
         run: echo $build_tag_message
@@ -251,7 +254,7 @@ jobs:
           TAG_SHA: ${{ github.event.after }}
         run: |
           touch ./tag_message.md
-          TAG_MESSAGE=$(curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/jhd2best/harmony-test/git/tags/$TAG_SHA | jq '.message' | tr -d "\"")
+          TAG_MESSAGE=$(git cat-file tag v$VERSION | tail -n+6)
           echo -e "$TAG_MESSAGE\n\nThe released version: $build_version_long" >> ./tag_message.md
 
       - name: Create Release
