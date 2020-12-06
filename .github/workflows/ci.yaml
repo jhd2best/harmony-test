@@ -223,7 +223,7 @@ jobs:
     name: Create and publish release page
     needs: check
     runs-on: ubuntu-18.04
-    if: needs.check.outputs.tag_annotated == true
+    if: needs.check.outputs.tag_annotated == 'true'
 
     steps:
       - name: Checkout harmony core code
