@@ -82,14 +82,15 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Get tag message
+      - name: Check tag annotated
+        id: check-tag-annotated
         run: |
           VERSION=$(git tag -l --sort=-v:refname | head -n 1)
           if git rev-parse $VERSION^{tag} -- &>/dev/null
           then
-            echo "annotated"
+            echo "::set-output name=tag_annotated::true"
           else
-            echo "::error::not annotated"
+            echo "::set-output name=tag_annotated::false"
           fi
         working-directory: harmony
 
@@ -219,6 +220,7 @@ jobs:
     name: Create and publish release page
     needs: check
     runs-on: ubuntu-18.04
+    if: jobs.check.steps.check-tag-annotated.outputs.tag_annotated == true
 
     steps:
       - name: Checkout harmony core code
