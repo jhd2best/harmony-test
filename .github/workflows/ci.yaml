@@ -6,24 +6,24 @@ on:
       - v*
 
 jobs:
-  temp:
-    runs-on: ubuntu-18.04
+  # temp:
+  #   runs-on: ubuntu-18.04
 
-    steps:
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v3
-        with:
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASS }}
+  #   steps:
+  #     - name: Import GPG key
+  #       id: import_gpg
+  #       uses: crazy-max/ghaction-import-gpg@v3
+  #       with:
+  #         gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+  #         passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASS }}
 
-      - name: GPG user IDs
-        run: |
-          echo "fingerprint: ${{ steps.import_gpg.outputs.fingerprint }}"
-          echo "keyid:       ${{ steps.import_gpg.outputs.keyid }}"
-          echo "name:        ${{ steps.import_gpg.outputs.name }}"
-          echo "email:       ${{ steps.import_gpg.outputs.email }}"
-          
+  #     - name: GPG user IDs
+  #       run: |
+  #         echo "fingerprint: ${{ steps.import_gpg.outputs.fingerprint }}"
+  #         echo "keyid:       ${{ steps.import_gpg.outputs.keyid }}"
+  #         echo "name:        ${{ steps.import_gpg.outputs.name }}"
+  #         echo "email:       ${{ steps.import_gpg.outputs.email }}"
+
       # - name: Checkout harmony core code
       #   uses: actions/checkout@v2
       #   with:
@@ -110,77 +110,92 @@ jobs:
   #         fi
   #       working-directory: harmony
 
-  # build:
-  #   name: Build harmony binary
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     matrix:
-  #       os: [ubuntu-18.04, macos-10.15]
-  #       # os: [ubuntu-18.04]
+  build:
+    name: Build harmony binary
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # os: [ubuntu-18.04, macos-10.15]
+        os: [ubuntu-18.04]
 
-  #   steps:
-  #     - name: Set up Go 1.14
-  #       uses: actions/setup-go@v2
-  #       with:
-  #         go-version: 1.14.7
+    steps:
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASS }}
 
-  #     - name: Checkout dependence repo
-  #       uses: actions/checkout@v2
-  #       with:
-  #         repository: harmony-one/mcl
-  #         path: mcl
+      - name: GPG user IDs
+        run: |
+          echo "fingerprint: ${{ steps.import_gpg.outputs.fingerprint }}"
+          echo "keyid:       ${{ steps.import_gpg.outputs.keyid }}"
+          echo "name:        ${{ steps.import_gpg.outputs.name }}"
+          echo "email:       ${{ steps.import_gpg.outputs.email }}"
 
-  #     - name: Checkout dependence repo
-  #       uses: actions/checkout@v2
-  #       with:
-  #         repository: harmony-one/bls
-  #         path: bls
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14.7
 
-  #     - name: Checkout harmony core code
-  #       uses: actions/checkout@v2
-  #       with:
-  #         path: harmony
-  #         ref: main
-  #         fetch-depth: 0
+      - name: Checkout dependence repo
+        uses: actions/checkout@v2
+        with:
+          repository: harmony-one/mcl
+          path: mcl
 
-  #     - name: Get latest version and release
-  #       run: |
-  #         VERSION=$(git tag -l --sort=-v:refname | head -n 1 | tr -d v)
-  #         RELEASE=$(git describe --long | cut -f2 -d-)
-  #         echo "build_version=$VERSION" >> $GITHUB_ENV
-  #         echo "build_release=$RELEASE" >> $GITHUB_ENV
-  #       working-directory: harmony
+      - name: Checkout dependence repo
+        uses: actions/checkout@v2
+        with:
+          repository: harmony-one/bls
+          path: bls
 
-  #     - name: Build harmony binary and packages for Linux
-  #       if: matrix.os == 'ubuntu-18.04'
-  #       run: |
-  #         make linux_static
-  #         make deb
-  #         mv ./bin/harmony ./bin/harmony-linux
-  #         mv $HOME/debbuild/harmony-$build_version-$build_release.deb ./bin/
-  #       working-directory: harmony
+      - name: Checkout harmony core code
+        uses: actions/checkout@v2
+        with:
+          path: harmony
+          ref: main
+          fetch-depth: 0
 
-  #     - name: Build harmony binary and packages for MacOS
-  #       if: matrix.os == 'macos-10.15'
-  #       run: |
-  #         brew install bash
-  #         sudo rm -f /usr/local/opt/openssl
-  #         sudo ln -sf /usr/local/opt/openssl@1.1 /usr/local/opt/openssl
-  #         make
-  #         cd ./bin && mkdir ./lib && mv ./*.dylib ./lib && rm -f ./bootnode
-  #         zip -qr ./harmony-macos.zip ./*
-  #         rm -rf `ls * | egrep -v harmony-macos.zip`
-  #       working-directory: harmony
+      - name: Get latest version and release
+        run: |
+          VERSION=$(git tag -l --sort=-v:refname | head -n 1 | tr -d v)
+          RELEASE=$(git describe --long | cut -f2 -d-)
+          echo "build_version=$VERSION" >> $GITHUB_ENV
+          echo "build_release=$RELEASE" >> $GITHUB_ENV
+        working-directory: harmony
 
-  #     - name: Display structure of downloaded files
-  #       run: ls -R ./harmony/bin
+      - name: Build harmony binary and packages for Linux
+        if: matrix.os == 'ubuntu-18.04'
+        run: |
+          make linux_static
+          make deb
+          make rpm
+          mv ./bin/harmony ./bin/harmony-linux
+          mv $HOME/debbuild/harmony-$build_version-$build_release.deb ./bin/
+        working-directory: harmony
 
-  #     - name: Upload artifact
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: harmony
-  #         path: harmony/bin/*
-  #         retention-days: 1
+      - name: Build harmony binary and packages for MacOS
+        if: matrix.os == 'macos-10.15'
+        run: |
+          brew install bash
+          sudo rm -f /usr/local/opt/openssl
+          sudo ln -sf /usr/local/opt/openssl@1.1 /usr/local/opt/openssl
+          make
+          cd ./bin && mkdir ./lib && mv ./*.dylib ./lib && rm -f ./bootnode
+          zip -qr ./harmony-macos.zip ./*
+          rm -rf `ls * | egrep -v harmony-macos.zip`
+        working-directory: harmony
+
+      - name: Display structure of downloaded files
+        run: ls -R $HOME/rpmbuild
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: harmony
+          path: harmony/bin/*
+          retention-days: 1
 
   # docker-build:
   #   name: Build and push harmony docker image
