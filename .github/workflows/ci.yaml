@@ -174,6 +174,7 @@ jobs:
           make rpm
           mv ./bin/harmony ./bin/harmony-linux
           mv $HOME/debbuild/harmony-$build_version-$build_release.deb ./bin/
+          mv $HOME/rpmbuild/RPMS/x86_64/harmony-$build_version-$build_release.x86_64.rpm ./bin/
         working-directory: harmony
 
       - name: Build harmony binary and packages for MacOS
