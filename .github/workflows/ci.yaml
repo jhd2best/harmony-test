@@ -227,7 +227,7 @@ jobs:
 
       - name: Build preview works
         run: |
-          mv $GITHUB_WORKSPACE/harmony-linux ./scripts/docker/harmony
+          mv $GITHUB_WORKSPACE/harmony-amd64 ./scripts/docker/harmony
         working-directory: harmony
   
       - name: Set up Docker Buildx
