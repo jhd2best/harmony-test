@@ -326,7 +326,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./harmony-${{ env.build_version }}-${{ env.build_release }}.deb
-          asset_name: harmony-linux-${{ env.build_version }}.deb
+          asset_name: harmony-${{ env.build_version }}.deb
           asset_content_type: application/x-deb
 
       - name: Upload harmony rpm package for Linux
@@ -336,7 +336,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./harmony-${{ env.build_version }}-${{ env.build_release }}.x86_64.rpm
-          asset_name: harmony-linux-${{ env.build_version }}.x86_64.rpm
+          asset_name: harmony-${{ env.build_version }}.x86_64.rpm
           asset_content_type: application/x-rpm
 
       - name: Upload harmony amd64 binary for Linux
