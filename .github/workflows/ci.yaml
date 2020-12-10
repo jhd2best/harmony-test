@@ -115,8 +115,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # os: [ubuntu-18.04, macos-10.15]
-        os: [ubuntu-18.04]
+        os: [ubuntu-18.04, macos-10.15]
+        # os: [ubuntu-18.04]
 
     steps:
       - name: Import GPG key
@@ -249,85 +249,95 @@ jobs:
   #           haodi/harmony:latest
   #           haodi/harmony:${{ env.build_version }}-${{ env.build_release }}
 
-  # release-page:
-  #   name: Create and publish release page
-  #   needs: check
-  #   runs-on: ubuntu-18.04
-  #   if: needs.check.outputs.tag_annotated == 'true'
+  release-page:
+    name: Create and publish release page
+    needs: check
+    runs-on: ubuntu-18.04
+    if: needs.check.outputs.tag_annotated == 'true'
 
-  #   steps:
-  #     - name: Checkout harmony core code
-  #       uses: actions/checkout@v2
-  #       with:
-  #         path: harmony
-  #         ref: main
-  #         fetch-depth: 0
+    steps:
+      - name: Checkout harmony core code
+        uses: actions/checkout@v2
+        with:
+          path: harmony
+          ref: main
+          fetch-depth: 0
 
-  #     - name: Get latest version
-  #       run: |
-  #         VERSION=$(git tag -l --sort=-v:refname | head -n 1 | tr -d v)
-  #         VERSION_LONG=$(git describe --always --long --dirty)
-  #         RELEASE=$(git describe --long | cut -f2 -d-)
-  #         echo "build_version=$VERSION" >> $GITHUB_ENV
-  #         echo "build_version_long=$VERSION_LONG" >> $GITHUB_ENV
-  #         echo "build_release=$RELEASE" >> $GITHUB_ENV
-  #       working-directory: harmony
+      - name: Get latest version
+        run: |
+          VERSION=$(git tag -l --sort=-v:refname | head -n 1 | tr -d v)
+          VERSION_LONG=$(git describe --always --long --dirty)
+          RELEASE=$(git describe --long | cut -f2 -d-)
+          echo "build_version=$VERSION" >> $GITHUB_ENV
+          echo "build_version_long=$VERSION_LONG" >> $GITHUB_ENV
+          echo "build_release=$RELEASE" >> $GITHUB_ENV
+        working-directory: harmony
 
-  #     - name: Download artifact
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         name: harmony
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: harmony
 
-  #     - name: Display structure of downloaded files
-  #       run: ls -R
+      - name: Display structure of downloaded files
+        run: ls -R
 
-  #     - name: Get tag message
-  #       env:
-  #         TAG_SHA: ${{ github.event.after }}
-  #       run: |
-  #         touch ./tag_message.md
-  #         TAG_MESSAGE=$(git cat-file tag v$build_version | tail -n+6)
-  #         echo -e "$TAG_MESSAGE\n\nThe released version: $build_version_long" >> ./tag_message.md
-  #       working-directory: harmony
+      - name: Get tag message
+        env:
+          TAG_SHA: ${{ github.event.after }}
+        run: |
+          touch ./tag_message.md
+          TAG_MESSAGE=$(git cat-file tag v$build_version | tail -n+6)
+          echo -e "$TAG_MESSAGE\n\nThe released version: $build_version_long" >> ./tag_message.md
+        working-directory: harmony
 
-  #     - name: Create Release
-  #       id: create_release
-  #       uses: actions/create-release@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         tag_name: ${{ github.ref }}
-  #         release_name: Mainnet Release ${{ env.build_version }}
-  #         draft: true
-  #         prerelease: false
-  #         body_path: ./harmony/tag_message.md
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Mainnet Release ${{ env.build_version }}
+          draft: true
+          prerelease: false
+          body_path: ./harmony/tag_message.md
 
-      # - name: Upload harmony binary for Linux
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./harmony-linux
-      #     asset_name: harmony-linux-${{ env.build_version }}
-      #     asset_content_type: application/octet-stream
+      - name: Upload harmony binary for Linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./harmony-linux
+          asset_name: harmony-linux-${{ env.build_version }}
+          asset_content_type: application/octet-stream
 
-      # - name: Upload harmony deb package for Linux
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./harmony-${{ env.build_version }}-${{ env.build_release }}.deb
-      #     asset_name: harmony-linux-${{ env.build_version }}.deb
-      #     asset_content_type: application/x-deb
+      - name: Upload harmony deb package for Linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./harmony-${{ env.build_version }}-${{ env.build_release }}.deb
+          asset_name: harmony-linux-${{ env.build_version }}.deb
+          asset_content_type: application/x-deb
 
-      # - name: Upload harmony binary for MacOS
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./harmony-macos.zip
-      #     asset_name: harmony-macos-${{ env.build_version }}.zip
-      #     asset_content_type: application/zip
+      - name: Upload harmony rpm package for Linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./harmony-${{ env.build_version }}-${{ env.build_release }}.x86_64.rpm
+          asset_name: harmony-linux-${{ env.build_version }}.x86_64.rpm
+          asset_content_type: application/x-rpm
+
+      - name: Upload harmony binary for MacOS
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./harmony-macos.zip
+          asset_name: harmony-macos-${{ env.build_version }}.zip
+          asset_content_type: application/zip
