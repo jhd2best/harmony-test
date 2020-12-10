@@ -191,9 +191,6 @@ jobs:
           rm -rf `ls * | egrep -v harmony-macos.zip`
         working-directory: harmony
 
-      - name: Display structure of downloaded files
-        run: ls -R $HOME/rpmbuild
-
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
