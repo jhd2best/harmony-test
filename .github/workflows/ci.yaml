@@ -175,8 +175,8 @@ jobs:
       - name: Signed harmony binary
         if: matrix.os == 'ubuntu-18.04'
         run: |
-          gpg --detach-sign ./harmony-amd64
-          sha256sum ./harmony-amd64 >> ./harmony-amd64.sha256
+          gpg --detach-sign harmony-amd64
+          sha256sum harmony-amd64 >> harmony-amd64.sha256
         working-directory: harmony/bin
 
       - name: Build harmony binary and packages for MacOS
