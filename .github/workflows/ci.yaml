@@ -191,7 +191,7 @@ jobs:
           gpg --detach-sign harmony
           zip -qr ./harmony-macos.zip ./*
           rm -rf `ls * | egrep -v harmony-macos.zip`
-          sha256sum harmony-macos.zip >> harmony-macos.zip.sha256
+          shasum -a 256 harmony-macos.zip >> harmony-macos.zip.sha256
         working-directory: harmony
 
       - name: Upload artifact
