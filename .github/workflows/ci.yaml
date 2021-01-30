@@ -132,7 +132,7 @@ jobs:
       - name: Import GPG key
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" >> key.gpg
-          gpg --import --no-tty --batch --yes key.gpg
+          gpg --import --no-tty --batch --yes --passphrase "${{ secrets.GPG_PRIVATE_KEY_PASS }}" key.gpg
 
       - name: Set up Go 1.14
         uses: actions/setup-go@v2
@@ -181,7 +181,7 @@ jobs:
       - name: Signed harmony binary
         if: matrix.os == 'ubuntu-18.04'
         run: |
-          gpg --use-agent --armor --detach-sign harmony-amd64
+          gpg --detach-sign harmony-amd64
           sha256sum harmony-amd64 >> harmony-amd64.sha256
         working-directory: harmony/bin
 
@@ -193,7 +193,7 @@ jobs:
           sudo ln -sf /usr/local/opt/openssl@1.1 /usr/local/opt/openssl
           make
           cd ./bin && mkdir ./lib && mv ./*.dylib ./lib && rm -f ./bootnode
-          gpg --use-agent --armor --detach-sign harmony
+          gpg --detach-sign harmony
           zip -qr ./harmony-macos.zip ./*
           rm -rf `ls * | egrep -v harmony-macos.zip`
           shasum -a 256 harmony-macos.zip >> harmony-macos.zip.sha256
