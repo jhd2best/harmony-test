@@ -181,8 +181,7 @@ jobs:
       - name: Signed harmony binary
         if: matrix.os == 'ubuntu-18.04'
         run: |
-          export GPG_TTY=$(tty)
-          gpg --detach-sign harmony-amd64
+          gpg --use-agent --armor --detach-sign harmony-amd64
           sha256sum harmony-amd64 >> harmony-amd64.sha256
         working-directory: harmony/bin
 
@@ -194,8 +193,7 @@ jobs:
           sudo ln -sf /usr/local/opt/openssl@1.1 /usr/local/opt/openssl
           make
           cd ./bin && mkdir ./lib && mv ./*.dylib ./lib && rm -f ./bootnode
-          export GPG_TTY=$(tty)
-          gpg --detach-sign --no-tty harmony
+          gpg --use-agent --armor --detach-sign harmony
           zip -qr ./harmony-macos.zip ./*
           rm -rf `ls * | egrep -v harmony-macos.zip`
           shasum -a 256 harmony-macos.zip >> harmony-macos.zip.sha256
