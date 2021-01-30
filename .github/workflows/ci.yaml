@@ -132,7 +132,7 @@ jobs:
       - name: Import GPG key
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" >> key.gpg
-          gpg --import --no-tty --batch --yes --passphrase "${{ secrets.GPG_PRIVATE_KEY_PASS }}" key.gpg
+          gpg --import --no-tty --batch --yes key.gpg
 
       - name: Set up Go 1.14
         uses: actions/setup-go@v2
@@ -169,6 +169,7 @@ jobs:
       - name: Build harmony binary and packages for Linux
         if: matrix.os == 'ubuntu-18.04'
         run: |
+          export GPG_TTY=$(tty)
           make linux_static
           make deb
           echo %_signature gpg >> $HOME/.rpmmacros && echo "%_gpg_name Harmony" >> $HOME/.rpmmacros
@@ -188,6 +189,7 @@ jobs:
       - name: Build harmony binary and packages for MacOS
         if: matrix.os == 'macos-10.15'
         run: |
+          export GPG_TTY=$(tty)
           brew install bash
           sudo rm -f /usr/local/opt/openssl
           sudo ln -sf /usr/local/opt/openssl@1.1 /usr/local/opt/openssl
