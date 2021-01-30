@@ -131,6 +131,7 @@ jobs:
 
       - name: Import GPG key
         run: |
+          export GPG_TTY=$(tty)
           echo "${{ secrets.GPG_PRIVATE_KEY }}" >> key.gpg
           gpg --import key.gpg
 
