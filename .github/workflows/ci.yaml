@@ -132,8 +132,7 @@ jobs:
       - name: Import GPG key
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" >> key.gpg
-          cat ./key.gpg
-          gpg --import key.gpg
+          gpg --import --no-tty --batch --yes key.gpg
 
       - name: Set up Go 1.14
         uses: actions/setup-go@v2
