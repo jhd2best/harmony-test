@@ -122,18 +122,12 @@ jobs:
         # os: [macos-10.15]
 
     steps:
-      # ${{ secrets.GPG_PRIVATE_KEY_PASS }}
       - name: Import GPG key
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v3
         with:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ""
-
-      # - name: Import GPG key
-      #   run: |
-      #     echo "${{ secrets.GPG_PRIVATE_KEY }}" >> key.gpg
-      #     gpg --import --no-tty --batch --yes key.gpg
+          passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASS }}
 
       - name: Set up Go 1.14
         uses: actions/setup-go@v2
