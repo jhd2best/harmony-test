@@ -24,7 +24,6 @@ jobs:
   #         echo "name:        ${{ steps.import_gpg.outputs.name }}"
   #         echo "email:       ${{ steps.import_gpg.outputs.email }}"
   
-
       # - name: Checkout harmony core code
       #   uses: actions/checkout@v2
       #   with:
