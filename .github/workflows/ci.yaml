@@ -171,7 +171,7 @@ jobs:
         run: |
           make linux_static
           make deb
-          echo %_signature gpg >> $HOME/.rpmmacros && echo "%_gpg_name haodi" >> $HOME/.rpmmacros
+          echo %_signature gpg >> $HOME/.rpmmacros && echo "%_gpg_name Harmony" >> $HOME/.rpmmacros
           make rpm
           mv ./bin/harmony ./bin/harmony-amd64
           mv $HOME/debbuild/harmony-$build_version-$build_release.deb ./bin/
