@@ -131,8 +131,8 @@ jobs:
 
       - name: Import GPG key
         run: |
-          export GPG_TTY=$(tty)
           echo "${{ secrets.GPG_PRIVATE_KEY }}" >> key.gpg
+          cat ./key.gpg
           gpg --import key.gpg
 
       - name: Set up Go 1.14
