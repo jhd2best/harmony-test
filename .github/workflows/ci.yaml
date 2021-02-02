@@ -171,6 +171,8 @@ jobs:
           mv ./bin/harmony ./bin/harmony-amd64
           mv $HOME/debbuild/harmony-$build_version-$build_release.deb ./bin/
           mv $HOME/rpmbuild/RPMS/x86_64/harmony-$build_version-$build_release.x86_64.rpm ./bin/
+          make -C $(TOP)/mcl -j8
+          make -C $(TOP)/bls minimised_static BLS_SWAP_G=1 -j8
           bash ./scripts/go_executable_build.sh -a arm64 -s
           mv ./bin/harmony ./bin/harmony-arm64
         working-directory: harmony
