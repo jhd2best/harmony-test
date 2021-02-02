@@ -171,7 +171,7 @@ jobs:
           mv ./bin/harmony ./bin/harmony-amd64
           mv $HOME/debbuild/harmony-$build_version-$build_release.deb ./bin/
           mv $HOME/rpmbuild/RPMS/x86_64/harmony-$build_version-$build_release.x86_64.rpm ./bin/
-          GOARCH=arm64 && make linux_static && GOARCH=amd64
+          make arm_static
           mv ./bin/harmony ./bin/harmony-arm64
         working-directory: harmony
 
