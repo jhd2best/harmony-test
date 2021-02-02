@@ -171,6 +171,8 @@ jobs:
           mv ./bin/harmony ./bin/harmony-amd64
           mv $HOME/debbuild/harmony-$build_version-$build_release.deb ./bin/
           mv $HOME/rpmbuild/RPMS/x86_64/harmony-$build_version-$build_release.x86_64.rpm ./bin/
+          GOARCH=arm64 && make linux_static && GOARCH=amd64
+          mv ./bin/harmony ./bin/harmony-arm64
         working-directory: harmony
 
       - name: Signed harmony binary
@@ -370,6 +372,16 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./harmony-amd64.sig
           asset_name: harmony-amd64.sig
+          asset_content_type: application/octet-stream
+
+      - name: Upload harmony arm64 binary for Linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./harmony-arm64
+          asset_name: harmony-arm64
           asset_content_type: application/octet-stream
 
       - name: Upload harmony binary for MacOS
