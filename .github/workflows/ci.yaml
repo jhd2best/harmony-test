@@ -117,11 +117,17 @@ jobs:
     if: needs.check.outputs.tag_annotated == 'true'
     strategy:
       matrix:
-        os: [ubuntu-18.04, macos-10.15]
+        # os: [ubuntu-18.04, macos-10.15]
         # os: [ubuntu-18.04]
         # os: [macos-10.15]
+        os: [[self-hosted, linux, ARM64]]
 
     steps:
+      - name: Dump runner context
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+        run: echo "$RUNNER_CONTEXT"
+
       - name: Import GPG key
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v3
@@ -161,29 +167,26 @@ jobs:
           echo "build_release=$RELEASE" >> $GITHUB_ENV
         working-directory: harmony
 
-      # - name: Build harmony binary and packages for Linux
-      #   if: matrix.os == 'ubuntu-18.04'
-      #   run: |
-      #     make linux_static
-      #     make deb
-      #     echo %_signature gpg >> $HOME/.rpmmacros && echo "%_gpg_name test@test.com" >> $HOME/.rpmmacros
-      #     make rpm
-      #     mv ./bin/harmony ./bin/harmony-amd64
-      #     mv $HOME/debbuild/harmony-$build_version-$build_release.deb ./bin/
-      #     mv $HOME/rpmbuild/RPMS/x86_64/harmony-$build_version-$build_release.x86_64.rpm ./bin/
-      #   working-directory: harmony
+      - name: Build harmony binary and packages for Linux
+        if: matrix.os == 'ubuntu-18.04'
+        run: |
+          make linux_static
+          make deb
+          echo %_signature gpg >> $HOME/.rpmmacros && echo "%_gpg_name test@test.com" >> $HOME/.rpmmacros
+          make rpm
+          mv ./bin/harmony ./bin/harmony-amd64
+          mv $HOME/debbuild/harmony-$build_version-$build_release.deb ./bin/
+          mv $HOME/rpmbuild/RPMS/x86_64/harmony-$build_version-$build_release.x86_64.rpm ./bin/
+        working-directory: harmony
 
       - name: Build harmony binary and packages for Linux
         if: matrix.os == 'ubuntu-18.04'
         run: |
-          GOARCH=arm64
-          make -C ../mcl -j8
-          make -C ../bls minimised_static BLS_SWAP_G=1 -j8
-          bash ./scripts/go_executable_build.sh -a arm64 -s
+          make linux_static
           mv ./bin/harmony ./bin/harmony-arm64
         working-directory: harmony
 
-      - name: Signed harmony binary
+      - name: Signed amd64 harmony binary
         if: matrix.os == 'ubuntu-18.04'
         run: |
           gpg --detach-sign harmony-amd64
