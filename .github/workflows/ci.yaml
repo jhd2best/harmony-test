@@ -123,11 +123,6 @@ jobs:
         os: [[self-hosted, linux, ARM64]]
 
     steps:
-      - name: Dump runner context
-        env:
-          MATRIX_CONTEXT: ${{ toJson(matrix) }}
-        run: echo "$MATRIX_CONTEXT"
-
       - name: Import GPG key
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v3
@@ -180,7 +175,7 @@ jobs:
         working-directory: harmony
 
       - name: Build harmony binary and packages for Linux
-        if: matrix.os == 'ubuntu-18.04'
+        if: join(matrix.os, '-') == 'self-hosted-linux-ARM64'
         run: |
           make linux_static
           mv ./bin/harmony ./bin/harmony-arm64
