@@ -177,7 +177,6 @@ jobs:
       - name: Build harmony binary and packages for Linux
         if: join(matrix.os, '-') == 'self-hosted-linux-ARM64'
         run: |
-          sudo apt install -y glibc-static gmp-devel gmp-static openssl-libs openssl-static gcc-c++
           make linux_static
           mv ./bin/harmony ./bin/harmony-arm64
         working-directory: harmony
