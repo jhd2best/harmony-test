@@ -130,7 +130,6 @@ jobs:
       #     gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
       #     passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASS }}
 
-
       - name: Set up Go 1.14
         uses: actions/setup-go@v2
         with:
