@@ -117,24 +117,16 @@ jobs:
     if: needs.check.outputs.tag_annotated == 'true'
     strategy:
       matrix:
-        # os: [ubuntu-18.04, macos-10.15]
+        os: [ubuntu-18.04, macos-10.15, [self-hosted, linux, ARM64]]
         # os: [ubuntu-18.04]
         # os: [macos-10.15]
-        os: [[self-hosted, linux, ARM64]]
+        # os: [[self-hosted, linux, ARM64]]
 
     steps:
-      # - name: Import GPG key
-      #   id: import_gpg
-      #   uses: crazy-max/ghaction-import-gpg@v3
-      #   with:
-      #     gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-      #     passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASS }}
-
-      # - name: Set up Go 1.15
-      #   uses: actions/setup-go@v2
-      #   with:
-      #     go-version: 1.15.7
-
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14.14
 
       - name: Checkout dependence repo
         uses: actions/checkout@v2
@@ -182,12 +174,12 @@ jobs:
           mv ./bin/harmony ./bin/harmony-arm64
         working-directory: harmony
 
-      - name: Signed amd64 harmony binary
-        if: matrix.os == 'ubuntu-18.04'
-        run: |
-          gpg --detach-sign harmony-amd64
-          sha256sum harmony-amd64 >> harmony-amd64.sha256
-        working-directory: harmony/bin
+      - name: Import GPG key
+        if: matrix.os == 'macos-10.15'
+        uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASS }}
 
       - name: Build harmony binary and packages for MacOS
         if: matrix.os == 'macos-10.15'
@@ -200,7 +192,6 @@ jobs:
           gpg --detach-sign harmony
           zip -qr ./harmony-macos.zip ./*
           rm -rf `ls * | egrep -v harmony-macos.zip`
-          shasum -a 256 harmony-macos.zip >> harmony-macos.zip.sha256
         working-directory: harmony
 
       - name: Upload artifact
@@ -262,18 +253,17 @@ jobs:
             haodi/harmony:${{ env.build_version }}-${{ env.build_release }}
 
   release-page:
-    name: Create and publish release page
+    name: Sign binary and create and publish release page
     needs: [check, build]
     runs-on: ubuntu-18.04
     if: needs.check.outputs.tag_annotated == 'true'
 
     steps:
-      # - name: Import GPG key
-      #   id: import_gpg
-      #   uses: crazy-max/ghaction-import-gpg@v3
-      #   with:
-      #     gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-      #     passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASS }}
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASS }}
 
       - name: Checkout harmony core code
         uses: actions/checkout@v2
@@ -299,6 +289,23 @@ jobs:
 
       - name: Display structure of downloaded files
         run: ls -R
+
+      - name: Signed amd64 harmony binary
+        run: |
+          gpg --detach-sign harmony-amd64
+          sha256sum harmony-amd64 >> harmony-amd64.sha256
+        working-directory: harmony
+
+      - name: Signed arm64 harmony binary
+        run: |
+          gpg --detach-sign harmony-arm64
+          sha256sum harmony-arm64 >> harmony-arm64.sha256
+        working-directory: harmony
+
+      - name: Signed amd64 harmony binary
+        run: |
+          shasum -a 256 harmony-macos.zip >> harmony-macos.zip.sha256
+        working-directory: harmony
 
       - name: Get tag message
         env:
@@ -361,7 +368,7 @@ jobs:
           asset_name: harmony-amd64
           asset_content_type: application/octet-stream
 
-      - name: Upload sha256 signature of harmony binary for Linux
+      - name: Upload sha256 signature of harmony amd64 binary for Linux
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -371,7 +378,7 @@ jobs:
           asset_name: harmony-amd64.sha256
           asset_content_type: text/plain
 
-      - name: Upload gpg signature of harmony binary for Linux
+      - name: Upload gpg signature of harmony amd64 binary for Linux
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -389,6 +396,26 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./harmony-arm64
           asset_name: harmony-arm64
+          asset_content_type: application/octet-stream
+
+      - name: Upload sha256 signature of harmony arm64 binary for Linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./harmony-arm64.sha256
+          asset_name: harmony-arm64.sha256
+          asset_content_type: text/plain
+
+      - name: Upload gpg signature of harmony arm64 binary for Linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./harmony-arm64.sig
+          asset_name: harmony-arm64.sig
           asset_content_type: application/octet-stream
 
       - name: Upload harmony binary for MacOS
