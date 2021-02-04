@@ -177,6 +177,7 @@ jobs:
       - name: Build harmony binary and packages for Linux
         if: join(matrix.os, '-') == 'self-hosted-linux-ARM64'
         run: |
+          export CGOENABLE=1
           make linux_static
           mv ./bin/harmony ./bin/harmony-arm64
         working-directory: harmony
