@@ -294,18 +294,15 @@ jobs:
         run: |
           gpg --detach-sign harmony-amd64
           sha256sum harmony-amd64 >> harmony-amd64.sha256
-        working-directory: harmony
 
       - name: Signed arm64 harmony binary
         run: |
           gpg --detach-sign harmony-arm64
           sha256sum harmony-arm64 >> harmony-arm64.sha256
-        working-directory: harmony
 
       - name: Signed amd64 harmony binary
         run: |
           shasum -a 256 harmony-macos.zip >> harmony-macos.zip.sha256
-        working-directory: harmony
 
       - name: Get tag message
         env:
