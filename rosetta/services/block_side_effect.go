@@ -10,10 +10,7 @@ import (
 
 	"github.com/harmony-one/harmony/core"
 	hmytypes "github.com/harmony-one/harmony/core/types"
-	nodeconfig "github.com/harmony-one/harmony/internal/configs/node"
-	shardingconfig "github.com/harmony-one/harmony/internal/configs/sharding"
 	"github.com/harmony-one/harmony/rosetta/common"
-	"github.com/harmony-one/harmony/shard"
 )
 
 // containsSideEffectTransaction checks if the block contains any side effect operations to report.
@@ -54,7 +51,7 @@ func unpackSideEffectTransactionIdentifier(
 	hash := txID.Hash
 	hash = strings.TrimPrefix(hash, "0x")
 	hash = strings.TrimPrefix(hash, "0X")
-	if len(hash) < blockHashStrLen || string(hash[blockHashStrLen]) != "_" ||
+	if len(hash) <= blockHashStrLen || string(hash[blockHashStrLen]) != "_" ||
 		hash[blockHashStrLen+1:] != SideEffectTransactionSuffix {
 		return ethcommon.Hash{}, common.NewError(common.CatchAllError, map[string]interface{}{
 			"message": "unknown side effect transaction ID format",
@@ -87,7 +84,7 @@ func (s *BlockAPI) getSideEffectTransaction(
 
 	// Handle genesis funds
 	if blk.NumberU64() == 0 {
-		ops, rosettaError := GetSideEffectOperationsFromGenesisSpec(getGenesisSpec(s.hmy.ShardID), startingOpIndex)
+		ops, rosettaError := GetSideEffectOperationsFromGenesisSpec(core.GetGenesisSpec(s.hmy.ShardID), startingOpIndex)
 		if rosettaError != nil {
 			return nil, rosettaError
 		}
@@ -154,15 +151,4 @@ func (s *BlockAPI) sideEffectBlockTransaction(
 		return nil, rosettaError
 	}
 	return &types.BlockTransactionResponse{Transaction: tx}, nil
-}
-
-// getGenesisSpec ..
-func getGenesisSpec(shardID uint32) *core.Genesis {
-	if shard.Schedule.GetNetworkID() == shardingconfig.MainNet {
-		return core.NewGenesisSpec(nodeconfig.Mainnet, shardID)
-	}
-	if shard.Schedule.GetNetworkID() == shardingconfig.LocalNet {
-		return core.NewGenesisSpec(nodeconfig.Localnet, shardID)
-	}
-	return core.NewGenesisSpec(nodeconfig.Testnet, shardID)
 }

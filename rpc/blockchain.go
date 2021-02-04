@@ -4,28 +4,23 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/rpc"
-	"github.com/harmony-one/harmony/consensus/reward"
+
 	"github.com/harmony-one/harmony/hmy"
+	"github.com/harmony-one/harmony/internal/chain"
 	internal_common "github.com/harmony-one/harmony/internal/common"
+	nodeconfig "github.com/harmony-one/harmony/internal/configs/node"
 	"github.com/harmony-one/harmony/internal/utils"
 	"github.com/harmony-one/harmony/numeric"
 	rpc_common "github.com/harmony-one/harmony/rpc/common"
+	eth "github.com/harmony-one/harmony/rpc/eth"
 	v1 "github.com/harmony-one/harmony/rpc/v1"
 	v2 "github.com/harmony-one/harmony/rpc/v2"
 	"github.com/harmony-one/harmony/shard"
-)
-
-const (
-	initSupply = int64(12600000000)
-)
-
-var (
-	blocksPeriod = shard.Schedule.BlocksPerEpoch()
+	stakingReward "github.com/harmony-one/harmony/staking/reward"
 )
 
 // PublicBlockchainService provides an API to access the Harmony blockchain.
@@ -45,10 +40,26 @@ func NewPublicBlockchainAPI(hmy *hmy.Harmony, version Version) rpc.API {
 	}
 }
 
+// ChainId returns the chain id of the chain - required by MetaMask
+func (s *PublicBlockchainService) ChainId(ctx context.Context) (interface{}, error) {
+	// Format return base on version
+	switch s.version {
+	case V1:
+		return hexutil.Uint64(s.hmy.ChainID), nil
+	case V2:
+		return s.hmy.ChainID, nil
+	case Eth:
+		ethChainID := nodeconfig.GetDefaultConfig().GetNetworkType().ChainConfig().EthCompatibleChainID
+		return hexutil.Uint64(ethChainID.Uint64()), nil
+	default:
+		return nil, ErrUnknownRPCVersion
+	}
+}
+
 // getBlockOptions is a helper to get block args given an interface option from RPC params.
 func (s *PublicBlockchainService) getBlockOptions(opts interface{}) (*rpc_common.BlockArgs, error) {
 	switch s.version {
-	case V1:
+	case V1, Eth:
 		fullTx, ok := opts.(bool)
 		if !ok {
 			return nil, fmt.Errorf("invalid type for block arguments")
@@ -91,7 +102,7 @@ func (s *PublicBlockchainService) BlockNumber(ctx context.Context) (interface{},
 
 	// Format return base on version
 	switch s.version {
-	case V1:
+	case V1, Eth:
 		return hexutil.Uint64(header.Number().Uint64()), nil
 	case V2:
 		return header.Number().Uint64(), nil
@@ -141,12 +152,15 @@ func (s *PublicBlockchainService) GetBlockByNumber(
 		rpcBlock, err = v1.NewBlock(blk, blockArgs, leader)
 	case V2:
 		rpcBlock, err = v2.NewBlock(blk, blockArgs, leader)
+	case Eth:
+		rpcBlock, err = eth.NewBlock(blk, blockArgs, leader)
 	default:
 		return nil, ErrUnknownRPCVersion
 	}
 	if err != nil {
 		return nil, err
 	}
+
 	response, err = NewStructuredResponse(rpcBlock)
 	if err != nil {
 		return nil, err
@@ -158,6 +172,7 @@ func (s *PublicBlockchainService) GetBlockByNumber(
 			response[field] = nil
 		}
 	}
+
 	return response, err
 }
 
@@ -198,6 +213,8 @@ func (s *PublicBlockchainService) GetBlockByHash(
 		rpcBlock, err = v1.NewBlock(blk, blockArgs, leader)
 	case V2:
 		rpcBlock, err = v2.NewBlock(blk, blockArgs, leader)
+	case Eth:
+		rpcBlock, err = eth.NewBlock(blk, blockArgs, leader)
 	default:
 		return nil, ErrUnknownRPCVersion
 	}
@@ -376,8 +393,9 @@ func (s *PublicBlockchainService) GetSignedBlocks(
 	totalSigned := uint64(0)
 	lastBlock := uint64(0)
 	blockHeight := s.hmy.CurrentBlock().Number().Uint64()
-	if blockHeight >= blocksPeriod {
-		lastBlock = blockHeight - blocksPeriod + 1
+	instance := shard.Schedule.InstanceForEpoch(s.hmy.CurrentBlock().Epoch())
+	if blockHeight >= instance.BlocksPerEpoch() {
+		lastBlock = blockHeight - instance.BlocksPerEpoch() + 1
 	}
 	for i := lastBlock; i <= blockHeight; i++ {
 		signed, err := s.IsBlockSigner(ctx, BlockNumber(i), address)
@@ -388,7 +406,7 @@ func (s *PublicBlockchainService) GetSignedBlocks(
 
 	// Format the response according to the version
 	switch s.version {
-	case V1:
+	case V1, Eth:
 		return hexutil.Uint64(totalSigned), nil
 	case V2:
 		return totalSigned, nil
@@ -408,7 +426,7 @@ func (s *PublicBlockchainService) GetEpoch(ctx context.Context) (interface{}, er
 
 	// Format the response according to the version
 	switch s.version {
-	case V1:
+	case V1, Eth:
 		return hexutil.Uint64(epoch), nil
 	case V2:
 		return epoch, nil
@@ -466,7 +484,7 @@ func (s *PublicBlockchainService) GetBalanceByBlockNumber(
 
 	// Format return base on version
 	switch s.version {
-	case V1:
+	case V1, Eth:
 		return (*hexutil.Big)(balance), nil
 	case V2:
 		return balance, nil
@@ -603,18 +621,14 @@ func (s *PublicBlockchainService) GetCurrentBadBlocks(
 func (s *PublicBlockchainService) GetTotalSupply(
 	ctx context.Context,
 ) (numeric.Dec, error) {
-	// Response output is the same for all versions
-	return numeric.NewDec(initSupply), nil
+	return stakingReward.GetTotalTokens(s.hmy.BlockChain)
 }
 
-// GetCirculatingSupply ..
+// GetCirculatingSupply ...
 func (s *PublicBlockchainService) GetCirculatingSupply(
 	ctx context.Context,
 ) (numeric.Dec, error) {
-	timestamp := time.Now()
-
-	// Response output is the same for all versions
-	return numeric.NewDec(initSupply).Mul(reward.PercentageForTimeStamp(timestamp.Unix())), nil
+	return chain.GetCirculatingSupply(ctx, s.hmy.BlockChain)
 }
 
 // GetStakingNetworkInfo ..

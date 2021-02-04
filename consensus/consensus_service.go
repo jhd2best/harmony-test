@@ -5,8 +5,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/harmony-one/harmony/internal/params"
-
 	"github.com/harmony-one/harmony/core/types"
 	"github.com/harmony-one/harmony/crypto/bls"
 
@@ -300,6 +298,10 @@ func (consensus *Consensus) UpdateConsensusInformation() Mode {
 	if curHeader.IsLastBlockInEpoch() {
 		nextShardState, err := curHeader.GetShardState()
 		if err != nil {
+			consensus.getLogger().Error().
+				Err(err).
+				Uint32("shard", consensus.ShardID).
+				Msg("[UpdateConsensusInformation] Error retrieving current shard state in the first block")
 			return Syncing
 		}
 		if nextShardState.Epoch != nil {
@@ -309,9 +311,9 @@ func (consensus *Consensus) UpdateConsensusInformation() Mode {
 
 	consensus.BlockPeriod = 5 * time.Second
 
-	// Disable aggregate sig at epoch TBD for mainnet (for other net, it's default to true)
-	if consensus.Blockchain.Config().ChainID == params.MainnetChainID && curEpoch.Cmp(big.NewInt(1000)) >= 0 {
-		consensus.AggregateSig = true
+	// Enable 2s block time at the twoSecondsEpoch
+	if consensus.Blockchain.Config().IsTwoSeconds(nextEpoch) {
+		consensus.BlockPeriod = 2 * time.Second
 	}
 
 	isFirstTimeStaking := consensus.Blockchain.Config().IsStaking(nextEpoch) &&
@@ -408,12 +410,6 @@ func (consensus *Consensus) UpdateConsensusInformation() Mode {
 		return Syncing
 	}
 
-	consensus.getLogger().Info().
-		Uint64("block-number", curHeader.Number().Uint64()).
-		Uint64("curEpoch", curHeader.Epoch().Uint64()).
-		Uint32("shard-id", consensus.ShardID).
-		Msg("[UpdateConsensusInformation] changing committee")
-
 	// take care of possible leader change during the epoch
 	// TODO: in a very rare case, when a M1 view change happened, the block contains coinbase for last leader
 	// but the new leader is actually recognized by most of the nodes. At this time, if a node sync to this
@@ -441,6 +437,10 @@ func (consensus *Consensus) UpdateConsensusInformation() Mode {
 		myPubKeys := consensus.GetPublicKeys()
 		if myPubKeys.Contains(key.Object) {
 			if hasError {
+				consensus.getLogger().Error().
+					Str("myKey", myPubKeys.SerializeToHexStr()).
+					Msg("[UpdateConsensusInformation] hasError")
+
 				return Syncing
 			}
 
@@ -457,6 +457,9 @@ func (consensus *Consensus) UpdateConsensusInformation() Mode {
 			return Normal
 		}
 	}
+	consensus.getLogger().Info().
+		Msg("[UpdateConsensusInformation] not in committee, Listening")
+
 	// not in committee
 	return Listening
 }

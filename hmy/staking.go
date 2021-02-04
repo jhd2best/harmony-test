@@ -66,6 +66,11 @@ func (hmy *Harmony) readAndUpdateRawStakes(
 
 func (hmy *Harmony) getSuperCommittees() (*quorum.Transition, error) {
 	nowE := hmy.BlockChain.CurrentHeader().Epoch()
+
+	if hmy.BlockChain.CurrentHeader().IsLastBlockInEpoch() {
+		// current epoch is current header epoch + 1 if the header was last block of prev epoch
+		nowE = new(big.Int).Add(nowE, common.Big1)
+	}
 	thenE := new(big.Int).Sub(nowE, common.Big1)
 
 	var (
@@ -86,8 +91,8 @@ func (hmy *Harmony) getSuperCommittees() (*quorum.Transition, error) {
 		shard.ExternalSlotsAvailableForEpoch(thenE)
 
 	then, now :=
-		quorum.NewRegistry(stakedSlotsThen),
-		quorum.NewRegistry(stakedSlotsNow)
+		quorum.NewRegistry(stakedSlotsThen, int(thenE.Int64())),
+		quorum.NewRegistry(stakedSlotsNow, int(nowE.Int64()))
 
 	rawStakes := []effective.SlotPurchase{}
 	validatorSpreads := map[common.Address]numeric.Dec{}
@@ -309,10 +314,10 @@ func (hmy *Harmony) GetValidatorInformation(
 	computed := availability.ComputeCurrentSigning(
 		snapshot.Validator, wrapper,
 	)
-	beaconChainBlocks := uint64(
-		hmy.BeaconChain.CurrentBlock().Header().Number().Int64(),
-	) % shard.Schedule.BlocksPerEpoch()
-	computed.BlocksLeftInEpoch = shard.Schedule.BlocksPerEpoch() - beaconChainBlocks
+
+	lastBlockOfEpoch := shard.Schedule.EpochLastBlock(hmy.BeaconChain.CurrentBlock().Header().Epoch().Uint64())
+
+	computed.BlocksLeftInEpoch = lastBlockOfEpoch - hmy.BeaconChain.CurrentBlock().Header().Number().Uint64()
 
 	if defaultReply.CurrentlyInCommittee {
 		defaultReply.Performance = &staking.CurrentEpochPerformance{

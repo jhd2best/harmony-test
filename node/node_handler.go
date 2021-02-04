@@ -250,6 +250,9 @@ func (node *Node) VerifyNewBlock(newBlock *types.Block) error {
 	if newBlock == nil || newBlock.Header() == nil {
 		return errors.New("nil header or block asked to verify")
 	}
+	if newBlock.NumberU64() <= node.Blockchain().CurrentBlock().NumberU64() {
+		return errors.Errorf("block with the same block number is already committed: %d", newBlock.NumberU64())
+	}
 	if err := node.Blockchain().Validator().ValidateHeader(newBlock, true); err != nil {
 		utils.Logger().Error().
 			Str("blockHash", newBlock.Hash().Hex()).
@@ -384,10 +387,9 @@ func (node *Node) PostConsensusProcessing(newBlock *types.Block) error {
 				computed := availability.ComputeCurrentSigning(
 					snapshot.Validator, wrapper,
 				)
-				beaconChainBlocks := uint64(
-					node.Beaconchain().CurrentBlock().Header().Number().Int64(),
-				) % shard.Schedule.BlocksPerEpoch()
-				computed.BlocksLeftInEpoch = shard.Schedule.BlocksPerEpoch() - beaconChainBlocks
+				lastBlockOfEpoch := shard.Schedule.EpochLastBlock(node.Beaconchain().CurrentBlock().Header().Epoch().Uint64())
+
+				computed.BlocksLeftInEpoch = lastBlockOfEpoch - node.Beaconchain().CurrentBlock().Header().Number().Uint64()
 
 				if err != nil && computed.IsBelowThreshold {
 					url := h.Availability.OnDroppedBelowThreshold

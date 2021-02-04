@@ -57,11 +57,6 @@ func (ss stressnetSchedule) VdfDifficulty() int {
 	return stressnetVdfDifficulty
 }
 
-// ConsensusRatio ratio of new nodes vs consensus total nodes
-func (ss stressnetSchedule) ConsensusRatio() float64 {
-	return mainnetConsensusRatio
-}
-
 // TODO: remove it after randomness feature turned on mainnet
 //RandonnessStartingEpoch returns starting epoch of randonness generation
 func (ss stressnetSchedule) RandomnessStartingEpoch() uint64 {

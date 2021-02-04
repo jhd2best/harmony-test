@@ -34,6 +34,7 @@ import (
 	"github.com/harmony-one/harmony/p2p"
 	"github.com/harmony-one/harmony/shard"
 	"github.com/harmony-one/harmony/shard/committee"
+	"github.com/harmony-one/harmony/staking/reward"
 	"github.com/harmony-one/harmony/staking/slash"
 	staking "github.com/harmony-one/harmony/staking/types"
 	"github.com/harmony-one/harmony/webhooks"
@@ -117,7 +118,8 @@ type Node struct {
 	// BroadcastInvalidTx flag is considered when adding pending tx to tx-pool
 	BroadcastInvalidTx bool
 	// InSync flag indicates the node is in-sync or not
-	IsInSync *abool.AtomicBool
+	IsInSync      *abool.AtomicBool
+	proposedBlock map[uint64]*types.Block
 
 	deciderCache   *lru.Cache
 	committeeCache *lru.Cache
@@ -190,6 +192,10 @@ func (node *Node) addPendingTransactions(newTxs types.Transactions) []error {
 	for _, tx := range newTxs {
 		if tx.ShardID() != tx.ToShardID() && !acceptCx {
 			errs = append(errs, errors.WithMessage(errInvalidEpoch, "cross-shard tx not accepted yet"))
+			continue
+		}
+		if tx.IsEthCompatible() && !node.Blockchain().Config().IsEthCompatible(node.Blockchain().CurrentBlock().Epoch()) {
+			errs = append(errs, errors.WithMessage(errInvalidEpoch, "ethereum tx not accepted yet"))
 			continue
 		}
 		poolTxs = append(poolTxs, tx)
@@ -273,12 +279,12 @@ func (node *Node) AddPendingTransaction(newTx *types.Transaction) error {
 			}
 		}
 		if err == nil || node.BroadcastInvalidTx {
-			utils.Logger().Info().Str("Hash", newTx.Hash().Hex()).Msg("Broadcasting Tx")
+			utils.Logger().Info().Str("Hash", newTx.Hash().Hex()).Str("HashByType", newTx.HashByType().Hex()).Msg("Broadcasting Tx")
 			node.tryBroadcast(newTx)
 		}
 		return err
 	}
-	return errors.New("shard do not match")
+	return errors.Errorf("shard do not match, txShard: %d, nodeShard: %d", newTx.ShardID(), node.NodeConfig.ShardID)
 }
 
 // AddPendingReceipts adds one receipt message to pending list.
@@ -944,6 +950,7 @@ func New(
 		}
 
 		node.pendingCXReceipts = map[string]*types.CXReceiptsProof{}
+		node.proposedBlock = map[uint64]*types.Block{}
 		node.Consensus.VerifiedNewBlock = make(chan *types.Block, 1)
 		chain.Engine.SetBeaconchain(beaconChain)
 		// the sequence number is the next block number to be added in consensus protocol, which is
@@ -990,11 +997,24 @@ func New(
 		}()
 	}
 
+	// update reward values now that node is ready
+	node.updateInitialRewardValues()
+
 	// init metrics
 	initMetrics()
 	nodeStringCounterVec.WithLabelValues("version", nodeconfig.GetVersion()).Inc()
 
 	return &node
+}
+
+// updateInitialRewardValues using the node data
+func (node *Node) updateInitialRewardValues() {
+	numShards := shard.Schedule.InstanceForEpoch(node.Beaconchain().CurrentHeader().Epoch()).NumShards()
+	initTotal := big.NewInt(0)
+	for i := uint32(0); i < numShards; i++ {
+		initTotal = new(big.Int).Add(core.GetInitialFunds(i), initTotal)
+	}
+	reward.SetTotalInitialTokens(initTotal)
 }
 
 // InitConsensusWithValidators initialize shard state
@@ -1030,6 +1050,9 @@ func (node *Node) InitConsensusWithValidators() (err error) {
 	}
 	subComm, err := shardState.FindCommitteeByID(shardID)
 	if err != nil {
+		utils.Logger().Err(err).
+			Interface("shardState", shardState).
+			Msg("[InitConsensusWithValidators] Find CommitteeByID")
 		return err
 	}
 	pubKeys, err := subComm.BLSPublicKeys()
@@ -1049,6 +1072,7 @@ func (node *Node) InitConsensusWithValidators() (err error) {
 			utils.Logger().Info().
 				Uint64("blockNum", blockNum).
 				Int("numPubKeys", len(pubKeys)).
+				Str("mode", node.Consensus.Mode().String()).
 				Msg("[InitConsensusWithValidators] Successfully updated public keys")
 			node.Consensus.UpdatePublicKeys(pubKeys)
 			node.Consensus.SetMode(consensus.Normal)
